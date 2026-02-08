@@ -95,6 +95,36 @@ const SignUpForm = () => {
             />
           </div>
 
+          {/* Role */}
+          <div className="flex flex-col gap-2">
+            <label className="text-xs sm:text-sm font-medium text-black">
+              Choose your role
+            </label>
+
+            <div className="flex gap-6">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="role"
+                  value="learner"
+                  defaultChecked
+                  className="accent-indigo-600"
+                />
+                <span className="text-sm text-black">Learner</span>
+              </label>
+
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="role"
+                  value="mentor"
+                  className="accent-indigo-600"
+                />
+                <span className="text-sm text-black">Mentor</span>
+              </label>
+            </div>
+          </div>
+
           {/* Submit */}
           <button
             type="submit"
