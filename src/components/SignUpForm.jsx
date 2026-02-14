@@ -1,6 +1,71 @@
-import React from 'react'
+import React, { useState } from 'react'
+import useAuth from '../hooks/useAuth.js'
+import { Link, useNavigate } from 'react-router-dom'
 
 const SignUpForm = () => {
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [role, setRole] = useState('learner')
+  const [errors, setErrors] = useState({})
+
+  const { signUp } = useAuth()
+  const navigate = useNavigate()
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setErrors({})
+    const newErrors = {}
+    if (!name.trim()) newErrors.name = 'Name is required'
+    if (!password.trim()) {
+      newErrors.password = 'Password is required'
+    } else if (password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters'
+    }
+    if (!email.trim()) {
+      newErrors.email = 'Email is required'
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      newErrors.email = 'Invalid email format'
+    }
+    if (password !== confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match'
+    }
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors)
+      return
+    }
+    try {
+      const response = await signUp({ name, email, password, role })
+      navigate(`/verify-email?email=${encodeURIComponent(email)}`)
+    } catch (error) {
+      const response = error.response?.data
+
+      if (!response) {
+        setErrors({ general: 'Something went wrong. Please try again.' })
+        return
+      }
+
+      if (response.errors && typeof response.errors === 'object') {
+        setErrors(response.errors)
+        return
+      }
+
+      if (response.message) {
+        if (response.message.toLowerCase().includes('email')) {
+          setErrors({ email: response.message })
+        } else if (response.message.toLowerCase().includes('password')) {
+          setErrors({ password: response.message })
+        } else {
+          setErrors({ general: response.message })
+        }
+        return
+      }
+
+      setErrors({ general: 'Registration failed. Please try again.' })
+    }
+  }
+
   return (
     <div className="flex items-center justify-center px-4 sm:px-6">
       <div
@@ -21,12 +86,15 @@ const SignUpForm = () => {
             Create a new account
           </h2>
           <p className="mt-1 text-xs sm:text-sm text-black">
-            Enter your datails
+            Enter your details
           </p>
         </div>
 
         {/* Form */}
-        <form className="space-y-4 sm:space-y-5">
+        <form className="space-y-4 sm:space-y-5" onSubmit={handleSubmit}>
+          {errors.general && (
+            <p className="text-red-500 text-sm text-center">{errors.general}</p>
+          )}
           {/* Name */}
           <div className="flex flex-col gap-1">
             <label className="text-xs sm:text-sm text-black">Name</label>
@@ -39,7 +107,13 @@ const SignUpForm = () => {
               placeholder:text-black
               focus:outline-none
               focus:ring-2 focus:ring-blue-500"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
             />
+            {errors.name && (
+              <p className="text-red-500 text-xs mt-1">{errors.name}</p>
+            )}
           </div>
 
           {/* Email */}
@@ -57,7 +131,16 @@ const SignUpForm = () => {
                          placeholder:text-black
                          focus:outline-none
                          focus:ring-2 focus:ring-blue-500"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value)
+                setErrors((prev) => ({ ...prev, email: undefined }))
+              }}
+              required
             />
+            {errors.email && (
+              <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+            )}
           </div>
 
           {/* Password */}
@@ -75,7 +158,13 @@ const SignUpForm = () => {
                          placeholder:text-gray-400
                          focus:outline-none
                          focus:ring-2 focus:ring-blue-500"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
             />
+            {errors.password && (
+              <p className="text-red-500 text-xs mt-1">{errors.password}</p>
+            )}
           </div>
 
           <div className="flex flex-col gap-1">
@@ -92,7 +181,15 @@ const SignUpForm = () => {
                          placeholder:text-gray-400
                          focus:outline-none
                          focus:ring-2 focus:ring-blue-500"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
             />
+            {errors.confirmPassword && (
+              <p className="text-red-500 text-xs mt-1">
+                {errors.confirmPassword}
+              </p>
+            )}
           </div>
 
           {/* Role */}
@@ -107,8 +204,9 @@ const SignUpForm = () => {
                   type="radio"
                   name="role"
                   value="learner"
-                  defaultChecked
                   className="accent-indigo-600"
+                  checked={role === 'learner'}
+                  onChange={(e) => setRole(e.target.value)}
                 />
                 <span className="text-sm text-black">Learner</span>
               </label>
@@ -119,6 +217,8 @@ const SignUpForm = () => {
                   name="role"
                   value="mentor"
                   className="accent-indigo-600"
+                  checked={role === 'mentor'}
+                  onChange={(e) => setRole(e.target.value)}
                 />
                 <span className="text-sm text-black">Mentor</span>
               </label>
@@ -139,9 +239,9 @@ const SignUpForm = () => {
         {/* Footer */}
         <p className="mt-5 sm:mt-6 text-center text-xs sm:text-sm">
           Already have an account?{' '}
-          <a href="#" className="text-blue-500 hover:underline">
+          <Link to="/signin" className="text-blue-500 hover:underline">
             Sign In
-          </a>
+          </Link>
         </p>
       </div>
     </div>

@@ -3,6 +3,7 @@ import {
   loginUser,
   logoutUser,
   getCurrentUser,
+  registerUser,
 } from "../services/authService";
 
 export const AuthContext = createContext();
@@ -38,6 +39,11 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const signUp = async (data) => {
+    const response = await registerUser(data);
+    return response;
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -46,6 +52,7 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated: !!user,
         login,
         logout,
+        signUp,
       }}
     >
       {children}

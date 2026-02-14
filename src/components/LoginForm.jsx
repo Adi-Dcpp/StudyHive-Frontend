@@ -1,27 +1,26 @@
 import React, { useState } from 'react'
 import { loginUser, getCurrentUser } from '../services/authService.js'
 import { useNavigate } from 'react-router-dom'
-import useAuth from "../hooks/useAuth.js";
+import useAuth from '../hooks/useAuth.js'
 
 const LoginForm = () => {
-
   // Controlled state
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
-const { login } = useAuth();
-const navigate = useNavigate();
+  const { login } = useAuth()
+  const navigate = useNavigate()
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault()
 
-  try {
-    await login({ email, password });
-    navigate("/dashboard", { replace: true });
-  } catch (error) {
-    console.log("Login error:", error.response?.data);
+    try {
+      await login({ email, password })
+      navigate('/dashboard', { replace: true })
+    } catch (error) {
+      console.log('Login error:', error.response?.data)
+    }
   }
-};
   return (
     <div className="flex items-center justify-center px-4 sm:px-6">
       <div

@@ -1,12 +1,12 @@
-import { Routes, Route } from "react-router-dom";
-import Login from './pages/auth/Login'
-import SignUp from './pages/auth/SignUp'
-import ForgotPassword from './pages/auth/ForgotPassword'
-import EmailVerification from './pages/auth/EmailVerification'
-import AppLayout from './layouts/AppLayout'
+import { RouterProvider } from 'react-router-dom'
+import { router } from './routes/router'
+import { AuthProvider } from './contexts/AuthContext'
 
 function App() {
   return (
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
   )
 }
 

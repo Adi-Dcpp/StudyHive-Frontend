@@ -12,6 +12,7 @@ import ForgotPassword from '../pages/auth/ForgotPassword'
 import AppLayout from '../layouts/AppLayout'
 import DashboardHome from '../pages/DashboardHome'
 import ProtectedRoute from './ProtectedRoutes'
+import EmailVerification from '../pages/auth/EmailVerification'
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -19,6 +20,7 @@ export const router = createBrowserRouter(
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<SignUp />} />
+      <Route path="/verify-email" element={<EmailVerification />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
 
       <Route element={<ProtectedRoute />}>
