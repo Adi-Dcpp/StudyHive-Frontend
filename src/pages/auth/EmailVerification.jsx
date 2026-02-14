@@ -1,8 +1,26 @@
-import React, { useState } from 'react'
-import {useNavigate , useSearchParams} from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { resendEmailVerification } from '../../services/authService'
 
 const EmailVerification = () => {
+  const [cooldown, setCooldown] = useState(0)
+
+  useEffect(() => {
+    if (cooldown === 0) return
+
+    const timer = setInterval(() => {
+      setCooldown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer)
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [cooldown])
+
   const [searchParams] = useSearchParams()
   const email = searchParams.get('email')
   const navigate = useNavigate()
@@ -30,15 +48,17 @@ const EmailVerification = () => {
   }
 
   const handleResendEmail = async () => {
-    if (loading) return
+    if (loading || cooldown > 0) return
+
     try {
       setLoading(true)
       setMessage('')
       setErrorMessage('')
 
-      await resendEmailVerification(email)
+      await resendEmailVerification({ email })
 
       setMessage('Verification email resent! Please check your inbox.')
+      setCooldown(60)
     } catch (error) {
       setErrorMessage(
         error.response?.data?.message || 'Failed to resend verification email.'
@@ -93,10 +113,15 @@ const EmailVerification = () => {
           Didn’t receive the email?{' '}
           <button
             type="button"
-            className="font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
+            disabled={loading || cooldown > 0}
+            className={`font-medium transition-colors ${
+              cooldown > 0
+                ? 'text-gray-400 cursor-not-allowed'
+                : 'text-indigo-600 hover:text-indigo-700'
+            }`}
             onClick={handleResendEmail}
           >
-            Resend email
+            {cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend email'}
           </button>
         </div>
 

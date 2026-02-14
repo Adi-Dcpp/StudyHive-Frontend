@@ -1,10 +1,11 @@
 import React from 'react'
+import logo from '../assets/logo.png'
 
 const AuthHeader = () => {
   return (
     <div className="flex flex-col items-center justify-center py-2 sm:py-5 text-center space-y-2">
       <img
-        src="/src/assets/logo.png"
+        src={logo}
         alt="StudyHive Logo"
         className="h-16 sm:h-18 md:h-20 w-auto"
       />

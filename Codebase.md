@@ -12,6 +12,7 @@ src/
   components/
     AuthFooter.jsx
     AuthHeader.jsx
+    EmailVerified.jsx
     LoginForm.jsx
     Sidebar.jsx
     SignUpForm.jsx
@@ -57,16 +58,10 @@ src/
 ```jsx
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { RouterProvider } from 'react-router-dom'
-import { router } from './routes/router.jsx'
-import { AuthProvider } from './contexts/AuthContext'
+import App from './App'
 import './index.css'
 
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <AuthProvider>
-    <RouterProvider router={router} />
-  </AuthProvider>
-)
+ReactDOM.createRoot(document.getElementById('root')).render(<App />)
 ```
 
 ### src/index.css
@@ -78,15 +73,15 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 ### src/App.jsx
 
 ```jsx
-import { Routes, Route } from "react-router-dom";
-import Login from './pages/auth/Login'
-import SignUp from './pages/auth/SignUp'
-import ForgotPassword from './pages/auth/ForgotPassword'
-import EmailVerification from './pages/auth/EmailVerification'
-import AppLayout from './layouts/AppLayout'
+import { RouterProvider } from 'react-router-dom'
+import { router } from './routes/router'
+import { AuthProvider } from './contexts/AuthContext'
 
 function App() {
   return (
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
   )
 }
 
@@ -110,6 +105,8 @@ import ForgotPassword from '../pages/auth/ForgotPassword'
 import AppLayout from '../layouts/AppLayout'
 import DashboardHome from '../pages/DashboardHome'
 import ProtectedRoute from './ProtectedRoutes'
+import EmailVerification from '../pages/auth/EmailVerification'
+import EmailVerified from '../components/EmailVerified'
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -117,7 +114,9 @@ export const router = createBrowserRouter(
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<SignUp />} />
+      <Route path="/verify-email" element={<EmailVerification />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/email-verified" element={<EmailVerified />} />
 
       <Route element={<ProtectedRoute />}>
         <Route path="/dashboard" element={<AppLayout />}>
@@ -140,7 +139,7 @@ import useAuth from '../hooks/useAuth'
 const ProtectedRoute = () => {
   const { user, loading } = useAuth()
 
-  if (loading) return null
+  if (loading) return <div>Loading...</div>
   if (!user) return <Navigate to="/login" replace />
 
   return <Outlet />
@@ -155,7 +154,7 @@ export default ProtectedRoute
 import axios from 'axios'
 
 const API = axios.create({
-  baseURL: 'http://localhost:8000/api/v1',
+  baseURL: import.meta.env.VITE_API_URL,
   withCredentials: true,
 })
 
@@ -164,6 +163,11 @@ export const loginUser = (data) => API.post('/auth/login', data)
 export const getCurrentUser = () => API.get('/auth/me')
 
 export const logoutUser = () => API.post('/auth/logout')
+
+export const registerUser = (data) => API.post('/auth/register', data)
+
+export const resendEmailVerification = (data) =>
+  API.post('/auth/resend-email-verification', { email: data })
 
 export default API
 ```
@@ -205,7 +209,12 @@ export default AppLayout
 
 ```jsx
 import { createContext, useEffect, useState } from 'react'
-import { loginUser, logoutUser, getCurrentUser } from '../services/authService'
+import {
+  loginUser,
+  logoutUser,
+  getCurrentUser,
+  registerUser,
+} from '../services/authService'
 
 export const AuthContext = createContext()
 
@@ -240,6 +249,11 @@ export const AuthProvider = ({ children }) => {
     setUser(null)
   }
 
+  const signUp = async (data) => {
+    const response = await registerUser(data)
+    return response
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -248,6 +262,7 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated: !!user,
         login,
         logout,
+        signUp,
       }}
     >
       {children}
@@ -273,12 +288,13 @@ export default useAuth
 
 ```jsx
 import React from 'react'
+import logo from '../assets/logo.png'
 
 const AuthHeader = () => {
   return (
     <div className="flex flex-col items-center justify-center py-2 sm:py-5 text-center space-y-2">
       <img
-        src="/src/assets/logo.png"
+        src={logo}
         alt="StudyHive Logo"
         className="h-16 sm:h-18 md:h-20 w-auto"
       />
@@ -313,12 +329,86 @@ const AuthFooter = () => {
 export default AuthFooter
 ```
 
+### src/components/EmailVerified.jsx
+
+```jsx
+import React, { useEffect } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+
+const EmailVerified = () => {
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const status = searchParams.get('status')
+
+  useEffect(() => {
+    if (status === 'success') {
+      const timer = setTimeout(() => {
+        navigate('/login', { replace: true })
+      }, 3000)
+
+      return () => clearTimeout(timer)
+    }
+  }, [status, navigate])
+
+  const handleGoToLogin = () => {
+    navigate('/login', { replace: true })
+  }
+
+  const handleGoToSignup = () => {
+    navigate('/signup', { replace: true })
+  }
+
+  const isSuccess = status === 'success'
+
+  return (
+    <div className="min-h-screen flex items-center justify-center px-4 bg-gray-50">
+      <div className="w-full max-w-md bg-white border border-gray-200 rounded-2xl shadow-xl p-8 text-center space-y-6">
+        <div
+          className={`h-16 w-16 mx-auto flex items-center justify-center rounded-full ${
+            isSuccess ? 'bg-green-50' : 'bg-red-50'
+          }`}
+        >
+          <span className="text-3xl">{isSuccess ? '✅' : '❌'}</span>
+        </div>
+
+        <h2 className="text-2xl font-semibold text-gray-900">
+          {isSuccess ? 'Email Verified Successfully!' : 'Verification Failed'}
+        </h2>
+
+        <p className="text-sm text-gray-600">
+          {isSuccess
+            ? 'Your email has been verified. Redirecting you to login...'
+            : 'The verification link is invalid or has expired.'}
+        </p>
+
+        {isSuccess ? (
+          <button
+            onClick={handleGoToLogin}
+            className="w-full bg-indigo-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+          >
+            Go to Login
+          </button>
+        ) : (
+          <button
+            onClick={handleGoToSignup}
+            className="w-full bg-indigo-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+          >
+            Back to Signup
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
+export default EmailVerified
+```
+
 ### src/components/LoginForm.jsx
 
 ```jsx
 import React, { useState } from 'react'
-import { loginUser, getCurrentUser } from '../services/authService.js'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import useAuth from '../hooks/useAuth.js'
 
 const LoginForm = () => {
@@ -392,12 +482,12 @@ const LoginForm = () => {
               <label className="text-xs sm:text-sm font-medium text-shadow-black">
                 Password
               </label>
-              <a
-                href="#"
+              <Link
+                to="/forgot-password"
                 className="text-xs sm:text-sm text-blue-500 hover:underline"
               >
                 Forgot password?
-              </a>
+              </Link>
             </div>
 
             <input
@@ -430,9 +520,9 @@ const LoginForm = () => {
         {/* Footer */}
         <p className="mt-5 sm:mt-6 text-center text-xs sm:text-sm">
           Don&apos;t have an account?{' '}
-          <a href="#" className="text-blue-500 hover:underline">
+          <Link to="/signup" className="text-blue-500 hover:underline">
             Sign up
-          </a>
+          </Link>
         </p>
       </div>
     </div>
@@ -445,9 +535,74 @@ export default LoginForm
 ### src/components/SignUpForm.jsx
 
 ```jsx
-import React from 'react'
+import React, { useState } from 'react'
+import useAuth from '../hooks/useAuth.js'
+import { Link, useNavigate } from 'react-router-dom'
 
 const SignUpForm = () => {
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [role, setRole] = useState('learner')
+  const [errors, setErrors] = useState({})
+
+  const { signUp } = useAuth()
+  const navigate = useNavigate()
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setErrors({})
+    const newErrors = {}
+    if (!name.trim()) newErrors.name = 'Name is required'
+    if (!password.trim()) {
+      newErrors.password = 'Password is required'
+    } else if (password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters'
+    }
+    if (!email.trim()) {
+      newErrors.email = 'Email is required'
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      newErrors.email = 'Invalid email format'
+    }
+    if (password !== confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match'
+    }
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors)
+      return
+    }
+    try {
+      const response = await signUp({ name, email, password, role })
+      navigate(`/verify-email?email=${encodeURIComponent(email)}`)
+    } catch (error) {
+      const response = error.response?.data
+
+      if (!response) {
+        setErrors({ general: 'Something went wrong. Please try again.' })
+        return
+      }
+
+      if (response.errors && typeof response.errors === 'object') {
+        setErrors(response.errors)
+        return
+      }
+
+      if (response.message) {
+        if (response.message.toLowerCase().includes('email')) {
+          setErrors({ email: response.message })
+        } else if (response.message.toLowerCase().includes('password')) {
+          setErrors({ password: response.message })
+        } else {
+          setErrors({ general: response.message })
+        }
+        return
+      }
+
+      setErrors({ general: 'Registration failed. Please try again.' })
+    }
+  }
+
   return (
     <div className="flex items-center justify-center px-4 sm:px-6">
       <div
@@ -468,12 +623,15 @@ const SignUpForm = () => {
             Create a new account
           </h2>
           <p className="mt-1 text-xs sm:text-sm text-black">
-            Enter your datails
+            Enter your details
           </p>
         </div>
 
         {/* Form */}
-        <form className="space-y-4 sm:space-y-5">
+        <form className="space-y-4 sm:space-y-5" onSubmit={handleSubmit}>
+          {errors.general && (
+            <p className="text-red-500 text-sm text-center">{errors.general}</p>
+          )}
           {/* Name */}
           <div className="flex flex-col gap-1">
             <label className="text-xs sm:text-sm text-black">Name</label>
@@ -486,7 +644,13 @@ const SignUpForm = () => {
               placeholder:text-black
               focus:outline-none
               focus:ring-2 focus:ring-blue-500"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
             />
+            {errors.name && (
+              <p className="text-red-500 text-xs mt-1">{errors.name}</p>
+            )}
           </div>
 
           {/* Email */}
@@ -504,7 +668,16 @@ const SignUpForm = () => {
                          placeholder:text-black
                          focus:outline-none
                          focus:ring-2 focus:ring-blue-500"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value)
+                setErrors((prev) => ({ ...prev, email: undefined }))
+              }}
+              required
             />
+            {errors.email && (
+              <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+            )}
           </div>
 
           {/* Password */}
@@ -522,7 +695,13 @@ const SignUpForm = () => {
                          placeholder:text-gray-400
                          focus:outline-none
                          focus:ring-2 focus:ring-blue-500"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
             />
+            {errors.password && (
+              <p className="text-red-500 text-xs mt-1">{errors.password}</p>
+            )}
           </div>
 
           <div className="flex flex-col gap-1">
@@ -539,7 +718,15 @@ const SignUpForm = () => {
                          placeholder:text-gray-400
                          focus:outline-none
                          focus:ring-2 focus:ring-blue-500"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
             />
+            {errors.confirmPassword && (
+              <p className="text-red-500 text-xs mt-1">
+                {errors.confirmPassword}
+              </p>
+            )}
           </div>
 
           {/* Role */}
@@ -554,8 +741,9 @@ const SignUpForm = () => {
                   type="radio"
                   name="role"
                   value="learner"
-                  defaultChecked
                   className="accent-indigo-600"
+                  checked={role === 'learner'}
+                  onChange={(e) => setRole(e.target.value)}
                 />
                 <span className="text-sm text-black">Learner</span>
               </label>
@@ -566,6 +754,8 @@ const SignUpForm = () => {
                   name="role"
                   value="mentor"
                   className="accent-indigo-600"
+                  checked={role === 'mentor'}
+                  onChange={(e) => setRole(e.target.value)}
                 />
                 <span className="text-sm text-black">Mentor</span>
               </label>
@@ -586,9 +776,9 @@ const SignUpForm = () => {
         {/* Footer */}
         <p className="mt-5 sm:mt-6 text-center text-xs sm:text-sm">
           Already have an account?{' '}
-          <a href="#" className="text-blue-500 hover:underline">
+          <Link to="/login" className="text-blue-500 hover:underline">
             Sign In
-          </a>
+          </Link>
         </p>
       </div>
     </div>
@@ -604,8 +794,8 @@ export default SignUpForm
 import React from 'react'
 import logo from '../assets/logo.png'
 
-const Sidebar = () => {
-  return <div></div>
+const Sidebar = ({ isOpen, onClose }) => {
+  return <div className={isOpen ? 'block' : 'hidden'}></div>
 }
 
 export default Sidebar
@@ -621,6 +811,81 @@ const Topbar = () => {
 }
 
 export default Topbar
+```
+
+### src/components/landing/ContactSection.jsx
+
+```jsx
+// src/components/landing/ContactSection.jsx
+import FadeInSection from './FadeInSection'
+
+const ContactSection = () => {
+  return (
+    <section id="contact" className="py-20 bg-white">
+      <div className="max-w-5xl mx-auto px-6 text-center">
+        <FadeInSection>
+          <h2 className="text-3xl font-bold text-gray-900">Connect With Us</h2>
+
+          <p className="mt-6 text-gray-600">
+            StudyHive is an open collaborative project. Feel free to explore the
+            codebase or connect with the creator.
+          </p>
+
+          <div className="mt-8 flex justify-center gap-6">
+            <a
+              href="https://github.com/Adi-Dcpp"
+              target="_blank"
+              rel="noreferrer"
+              className="px-6 py-3 bg-gray-900 text-white rounded-lg hover:scale-105 transition-all duration-300"
+            >
+              GitHub
+            </a>
+
+            <a
+              href="mailto:luffy1120adi@gmail.com"
+              className="px-6 py-3 border border-gray-300 rounded-lg hover:border-indigo-600 hover:text-indigo-600 transition-all duration-300"
+            >
+              Email
+            </a>
+          </div>
+        </FadeInSection>
+      </div>
+    </section>
+  )
+}
+
+export default ContactSection
+```
+
+### src/components/landing/CTASection.jsx
+
+```jsx
+// src/components/landing/CTASection.jsx
+import { Link } from 'react-router-dom'
+import FadeInSection from './FadeInSection'
+
+const CTASection = () => {
+  return (
+    <section className="py-20 bg-indigo-600 text-white text-center">
+      <div className="max-w-4xl mx-auto px-6">
+        <FadeInSection>
+          <h2 className="text-3xl font-bold">
+            Ready to level up your study workflow?
+          </h2>
+
+          <Link
+            to="/signup"
+            className="mt-8 inline-block px-8 py-3 bg-white text-indigo-600 rounded-lg font-medium transition-all duration-300 hover:scale-105"
+          >
+            Create Your StudyHive
+          </Link>
+        </FadeInSection>
+      </div>
+    </section>
+  )
+}
+
+export default CTASection
 ```
 
 ### src/components/landing/FadeInSection.jsx
@@ -646,6 +911,81 @@ const FadeInSection = ({ children, delay = 0 }) => {
 }
 
 export default FadeInSection
+```
+
+### src/components/landing/FeaturesSection.jsx
+
+```jsx
+// src/components/landing/FeaturesSection.jsx
+import FadeInSection from './FadeInSection'
+
+const features = [
+  'Secure Authentication',
+  'Study Group Management',
+  'Learning Goal Tracking',
+  'Assignment & Submissions',
+  'File & Resource Sharing',
+  'Progress Monitoring Dashboard',
+]
+
+const FeaturesSection = () => {
+  return (
+    <section id="features" className="py-20 bg-white">
+      <div className="max-w-7xl mx-auto px-6">
+        <FadeInSection>
+          <h2 className="text-3xl font-bold text-center text-gray-900">
+            Powerful Features
+          </h2>
+
+          <div className="mt-12 grid md:grid-cols-3 gap-8">
+            {features.map((feature, index) => (
+              <div
+                key={index}
+                className="p-6 bg-gray-50 rounded-xl shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
+              >
+                <h3 className="font-semibold text-gray-800">{feature}</h3>
+              </div>
+            ))}
+          </div>
+        </FadeInSection>
+      </div>
+    </section>
+  )
+}
+
+export default FeaturesSection
+```
+
+### src/components/landing/Footer.jsx
+
+```jsx
+// src/components/landing/Footer.jsx
+const Footer = () => {
+  return (
+    <footer className="bg-gray-900 text-gray-400 py-10">
+      <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
+        <p>© {new Date().getFullYear()} StudyHive. All rights reserved.</p>
+
+        <div className="flex gap-6 mt-4 md:mt-0">
+          <a href="#" className="hover:text-white transition">
+            Features
+          </a>
+          <a href="#" className="hover:text-white transition">
+            About
+          </a>
+          <a href="#" className="hover:text-white transition">
+            Contact
+          </a>
+          <a href="#" className="hover:text-white transition">
+            GitHub
+          </a>
+        </div>
+      </div>
+    </footer>
+  )
+}
+
+export default Footer
 ```
 
 ### src/components/landing/HeroSection.jsx
@@ -737,93 +1077,10 @@ const HeroSection = () => {
 export default HeroSection
 ```
 
-### src/components/landing/FeaturesSection.jsx
-
-```jsx
-import FadeInSection from './FadeInSection'
-
-const features = [
-  'Secure Authentication',
-  'Study Group Management',
-  'Learning Goal Tracking',
-  'Assignment & Submissions',
-  'File & Resource Sharing',
-  'Progress Monitoring Dashboard',
-]
-
-const FeaturesSection = () => {
-  return (
-    <section id="features" className="py-20 bg-white">
-      <div className="max-w-7xl mx-auto px-6">
-        <FadeInSection>
-          <h2 className="text-3xl font-bold text-center text-gray-900">
-            Powerful Features
-          </h2>
-
-          <div className="mt-12 grid md:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <div
-                key={index}
-                className="p-6 bg-gray-50 rounded-xl shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
-              >
-                <h3 className="font-semibold text-gray-800">{feature}</h3>
-              </div>
-            ))}
-          </div>
-        </FadeInSection>
-      </div>
-    </section>
-  )
-}
-
-export default FeaturesSection
-```
-
-### src/components/landing/RolesSection.jsx
-
-```jsx
-import FadeInSection from './FadeInSection'
-
-const RolesSection = () => {
-  return (
-    <section className="py-20 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-6">
-        <FadeInSection>
-          <div className="grid md:grid-cols-2 gap-12">
-            <div className="bg-white p-8 rounded-xl shadow-md transition-all duration-300 hover:shadow-2xl">
-              <h3 className="text-xl font-bold text-indigo-600">For Mentors</h3>
-              <ul className="mt-6 space-y-3 text-gray-600">
-                <li>Create Study Groups</li>
-                <li>Assign Learning Goals</li>
-                <li>Review Submissions</li>
-                <li>Post Announcements</li>
-              </ul>
-            </div>
-
-            <div className="bg-white p-8 rounded-xl shadow-md transition-all duration-300 hover:shadow-2xl">
-              <h3 className="text-xl font-bold text-emerald-600">
-                For Learners
-              </h3>
-              <ul className="mt-6 space-y-3 text-gray-600">
-                <li>Join Groups</li>
-                <li>Track Goals</li>
-                <li>Submit Assignments</li>
-                <li>Access Resources</li>
-              </ul>
-            </div>
-          </div>
-        </FadeInSection>
-      </div>
-    </section>
-  )
-}
-
-export default RolesSection
-```
-
 ### src/components/landing/HowItWorks.jsx
 
 ```jsx
+// src/components/landing/HowItWorks.jsx
 import FadeInSection from './FadeInSection'
 
 const steps = [
@@ -861,109 +1118,10 @@ const HowItWorks = () => {
 export default HowItWorks
 ```
 
-### src/components/landing/SecuritySection.jsx
-
-```jsx
-import FadeInSection from './FadeInSection'
-
-const SecuritySection = () => {
-  return (
-    <section className="py-20 bg-gray-50">
-      <div className="max-w-5xl mx-auto px-6 text-center">
-        <FadeInSection>
-          <h2 className="text-3xl font-bold text-gray-900">
-            Secure & Reliable
-          </h2>
-          <p className="mt-6 text-gray-600">
-            Role-based access control, secure file uploads, email verification,
-            and production-ready backend architecture ensure your learning
-            environment stays protected.
-          </p>
-        </FadeInSection>
-      </div>
-    </section>
-  )
-}
-
-export default SecuritySection
-```
-
-### src/components/landing/CTASection.jsx
-
-```jsx
-import { Link } from 'react-router-dom'
-import FadeInSection from './FadeInSection'
-
-const CTASection = () => {
-  return (
-    <section className="py-20 bg-indigo-600 text-white text-center">
-      <div className="max-w-4xl mx-auto px-6">
-        <FadeInSection>
-          <h2 className="text-3xl font-bold">
-            Ready to level up your study workflow?
-          </h2>
-
-          <Link
-            to="/signup"
-            className="mt-8 inline-block px-8 py-3 bg-white text-indigo-600 rounded-lg font-medium transition-all duration-300 hover:scale-105"
-          >
-            Create Your StudyHive
-          </Link>
-        </FadeInSection>
-      </div>
-    </section>
-  )
-}
-
-export default CTASection
-```
-
-### src/components/landing/ContactSection.jsx
-
-```jsx
-import FadeInSection from './FadeInSection'
-
-const ContactSection = () => {
-  return (
-    <section id="contact" className="py-20 bg-white">
-      <div className="max-w-5xl mx-auto px-6 text-center">
-        <FadeInSection>
-          <h2 className="text-3xl font-bold text-gray-900">Connect With Us</h2>
-
-          <p className="mt-6 text-gray-600">
-            StudyHive is an open collaborative project. Feel free to explore the
-            codebase or connect with the creator.
-          </p>
-
-          <div className="mt-8 flex justify-center gap-6">
-            <a
-              href="https://github.com/Adi-Dcpp"
-              target="_blank"
-              rel="noreferrer"
-              className="px-6 py-3 bg-gray-900 text-white rounded-lg hover:scale-105 transition-all duration-300"
-            >
-              GitHub
-            </a>
-
-            <a
-              href="mailto:luffy1120adi@gmail.com"
-              className="px-6 py-3 border border-gray-300 rounded-lg hover:border-indigo-600 hover:text-indigo-600 transition-all duration-300"
-            >
-              Email
-            </a>
-          </div>
-        </FadeInSection>
-      </div>
-    </section>
-  )
-}
-
-export default ContactSection
-```
-
 ### src/components/landing/Navbar.jsx
 
 ```jsx
+// src/components/landing/Navbar.jsx
 import { Link } from 'react-router-dom'
 import logo from '../../assets/logo.png'
 
@@ -1010,35 +1168,87 @@ const Navbar = () => {
 export default Navbar
 ```
 
-### src/components/landing/Footer.jsx
+### src/components/landing/RolesSection.jsx
 
 ```jsx
-const Footer = () => {
-  return (
-    <footer className="bg-gray-900 text-gray-400 py-10">
-      <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
-        <p>© {new Date().getFullYear()} StudyHive. All rights reserved.</p>
+// src/components/landing/RolesSection.jsx
+import FadeInSection from './FadeInSection'
 
-        <div className="flex gap-6 mt-4 md:mt-0">
-          <a href="#" className="hover:text-white transition">
-            Features
-          </a>
-          <a href="#" className="hover:text-white transition">
-            About
-          </a>
-          <a href="#" className="hover:text-white transition">
-            Contact
-          </a>
-          <a href="#" className="hover:text-white transition">
-            GitHub
-          </a>
-        </div>
+const RolesSection = () => {
+  return (
+    <section className="py-20 bg-gray-50">
+      <div className="max-w-7xl mx-auto px-6">
+        <FadeInSection>
+          <div className="grid md:grid-cols-2 gap-12">
+            <div className="bg-white p-8 rounded-xl shadow-md transition-all duration-300 hover:shadow-2xl">
+              <h3 className="text-xl font-bold text-indigo-600">For Mentors</h3>
+              <ul className="mt-6 space-y-3 text-gray-600">
+                <li>Create Study Groups</li>
+                <li>Assign Learning Goals</li>
+                <li>Review Submissions</li>
+                <li>Post Announcements</li>
+              </ul>
+            </div>
+
+            <div className="bg-white p-8 rounded-xl shadow-md transition-all duration-300 hover:shadow-2xl">
+              <h3 className="text-xl font-bold text-emerald-600">
+                For Learners
+              </h3>
+              <ul className="mt-6 space-y-3 text-gray-600">
+                <li>Join Groups</li>
+                <li>Track Goals</li>
+                <li>Submit Assignments</li>
+                <li>Access Resources</li>
+              </ul>
+            </div>
+          </div>
+        </FadeInSection>
       </div>
-    </footer>
+    </section>
   )
 }
 
-export default Footer
+export default RolesSection
+```
+
+### src/components/landing/SecuritySection.jsx
+
+```jsx
+// src/components/landing/SecuritySection.jsx
+import FadeInSection from './FadeInSection'
+
+const SecuritySection = () => {
+  return (
+    <section className="py-20 bg-gray-50">
+      <div className="max-w-5xl mx-auto px-6 text-center">
+        <FadeInSection>
+          <h2 className="text-3xl font-bold text-gray-900">
+            Secure & Reliable
+          </h2>
+          <p className="mt-6 text-gray-600">
+            Role-based access control, secure file uploads, email verification,
+            and production-ready backend architecture ensure your learning
+            environment stays protected.
+          </p>
+        </FadeInSection>
+      </div>
+    </section>
+  )
+}
+
+export default SecuritySection
+```
+
+### src/pages/DashboardHome.jsx
+
+```jsx
+import React from 'react'
+
+const DashboardHome = () => {
+  return <div>DashboardHome</div>
+}
+
+export default DashboardHome
 ```
 
 ### src/pages/Landing.jsx
@@ -1073,63 +1283,159 @@ const Landing = () => {
 export default Landing
 ```
 
-### src/pages/DashboardHome.jsx
+### src/pages/auth/EmailVerification.jsx
 
 ```jsx
-import React from 'react'
+import React, { useState, useEffect } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { resendEmailVerification } from '../../services/authService'
 
-const DashboardHome = () => {
-  return <div>DashboardHome</div>
-}
+const EmailVerification = () => {
+  const [cooldown, setCooldown] = useState(0)
 
-export default DashboardHome
-```
+  useEffect(() => {
+    if (cooldown === 0) return
 
-### src/pages/auth/Login.jsx
+    const timer = setInterval(() => {
+      setCooldown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer)
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
 
-```jsx
-import React from 'react'
-import AuthHeader from '../../components/AuthHeader'
-import LoginForm from '../../components/LoginForm'
-import AuthFooter from '../../components/AuthFooter'
+    return () => clearInterval(timer)
+  }, [cooldown])
 
-const Login = () => {
-  return (
-    <div className="min-h-screen flex flex-col">
-      <div className="flex flex-col justify-center grow">
-        <AuthHeader />
-        <LoginForm />
+  const [searchParams] = useSearchParams()
+  const email = searchParams.get('email')
+  const navigate = useNavigate()
+
+  const [loading, setLoading] = useState(false)
+
+  const [message, setMessage] = useState('')
+  const [errorMessage, setErrorMessage] = useState('')
+
+  if (!email) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 bg-gray-50">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900">Invalid Email</h2>
+          <p className="text-gray-600 mt-2">
+            The email address is not valid or was not provided.
+          </p>
+        </div>
       </div>
+    )
+  }
 
-      <AuthFooter />
+  const handleBackToLogin = () => {
+    navigate('/login', { replace: true })
+  }
+
+  const handleResendEmail = async () => {
+    if (loading || cooldown > 0) return
+
+    try {
+      setLoading(true)
+      setMessage('')
+      setErrorMessage('')
+
+      await resendEmailVerification({ email })
+
+      setMessage('Verification email resent! Please check your inbox.')
+      setCooldown(60)
+    } catch (error) {
+      setErrorMessage(
+        error.response?.data?.message || 'Failed to resend verification email.'
+      )
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 bg-gray-50">
+      <div
+        className="
+          w-full max-w-md
+          rounded-2xl
+          border border-gray-200
+          bg-white
+          px-6 py-8 sm:px-8
+          shadow-xl
+          flex flex-col items-center
+          gap-6
+        "
+      >
+        {/* Icon */}
+        <div className="h-14 w-14 flex items-center justify-center rounded-full bg-indigo-50">
+          <span className="text-2xl">📬</span>
+        </div>
+
+        {/* Text */}
+        <div className="text-center space-y-1">
+          <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900">
+            Check your inbox
+          </h2>
+          <p className="text-sm sm:text-base text-gray-600">
+            We’ve sent a verification link to
+          </p>
+          <p className="text-sm sm:text-base font-medium text-gray-900">
+            {email}
+          </p>
+        </div>
+
+        {message && (
+          <p className="text-green-600 text-sm text-center">{message}</p>
+        )}
+
+        {errorMessage && (
+          <p className="text-red-500 text-sm text-center">{errorMessage}</p>
+        )}
+
+        {/* Resend */}
+        <div className="text-center text-sm text-gray-600">
+          Didn’t receive the email?{' '}
+          <button
+            type="button"
+            disabled={loading || cooldown > 0}
+            className={`font-medium transition-colors ${
+              cooldown > 0
+                ? 'text-gray-400 cursor-not-allowed'
+                : 'text-indigo-600 hover:text-indigo-700'
+            }`}
+            onClick={handleResendEmail}
+          >
+            {cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend email'}
+          </button>
+        </div>
+
+        {/* Back to login */}
+        <button
+          type="button"
+          className="
+            w-full
+            rounded-lg
+            border border-gray-300
+            py-2.5
+            text-sm font-medium
+            text-gray-700
+            hover:bg-gray-50
+            transition-colors
+          "
+          onClick={handleBackToLogin}
+        >
+          Back to login
+        </button>
+      </div>
     </div>
   )
 }
 
-export default Login
-```
-
-### src/pages/auth/SignUp.jsx
-
-```jsx
-import React from 'react'
-import AuthHeader from '../../components/AuthHeader'
-import AuthFooter from '../../components/AuthFooter'
-import SignUpForm from '../../components/SignUpForm'
-
-const SignUp = () => {
-  return (
-    <div className="min-h-screen flex flex-col">
-      <div className="flex flex-col justify-center grow">
-        <AuthHeader />
-        <SignUpForm />
-      </div>
-      <AuthFooter />
-    </div>
-  )
-}
-
-export default SignUp
+export default EmailVerification
 ```
 
 ### src/pages/auth/ForgotPassword.jsx
@@ -1184,75 +1490,49 @@ const ForgotPassword = () => {
 export default ForgotPassword
 ```
 
-### src/pages/auth/EmailVerification.jsx
+### src/pages/auth/Login.jsx
 
 ```jsx
 import React from 'react'
+import AuthHeader from '../../components/AuthHeader'
+import LoginForm from '../../components/LoginForm'
+import AuthFooter from '../../components/AuthFooter'
 
-const EmailVerification = () => {
+const Login = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 bg-gray-50">
-      <div
-        className="
-          w-full max-w-md
-          rounded-2xl
-          border border-gray-200
-          bg-white
-          px-6 py-8 sm:px-8
-          shadow-xl
-          flex flex-col items-center
-          gap-6
-        "
-      >
-        {/* Icon */}
-        <div className="h-14 w-14 flex items-center justify-center rounded-full bg-indigo-50">
-          <span className="text-2xl">📬</span>
-        </div>
-
-        {/* Text */}
-        <div className="text-center space-y-1">
-          <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900">
-            Check your inbox
-          </h2>
-          <p className="text-sm sm:text-base text-gray-600">
-            We’ve sent a verification link to
-          </p>
-          <p className="text-sm sm:text-base font-medium text-gray-900">
-            your@email.com
-          </p>
-        </div>
-
-        {/* Resend */}
-        <div className="text-center text-sm text-gray-600">
-          Didn’t receive the email?{' '}
-          <button
-            type="button"
-            className="font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
-          >
-            Resend email
-          </button>
-        </div>
-
-        {/* Back to login */}
-        <button
-          type="button"
-          className="
-            w-full
-            rounded-lg
-            border border-gray-300
-            py-2.5
-            text-sm font-medium
-            text-gray-700
-            hover:bg-gray-50
-            transition-colors
-          "
-        >
-          Back to login
-        </button>
+    <div className="min-h-screen flex flex-col">
+      <div className="flex flex-col justify-center grow">
+        <AuthHeader />
+        <LoginForm />
       </div>
+
+      <AuthFooter />
     </div>
   )
 }
 
-export default EmailVerification
+export default Login
+```
+
+### src/pages/auth/SignUp.jsx
+
+```jsx
+import React from 'react'
+import AuthHeader from '../../components/AuthHeader'
+import AuthFooter from '../../components/AuthFooter'
+import SignUpForm from '../../components/SignUpForm'
+
+const SignUp = () => {
+  return (
+    <div className="min-h-screen flex flex-col">
+      <div className="flex flex-col justify-center grow">
+        <AuthHeader />
+        <SignUpForm />
+      </div>
+      <AuthFooter />
+    </div>
+  )
+}
+
+export default SignUp
 ```

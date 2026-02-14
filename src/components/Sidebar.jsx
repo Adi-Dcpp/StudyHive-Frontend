@@ -1,9 +1,9 @@
 import React from 'react'
 import logo from '../assets/logo.png'
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen, onClose }) => {
   return (
-    <div>
+    <div className={isOpen ? 'block' : 'hidden'}>
       
     </div>
   )

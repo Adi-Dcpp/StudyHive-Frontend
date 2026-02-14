@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
-import { loginUser, getCurrentUser } from '../services/authService.js'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate , Link} from 'react-router-dom'
 import useAuth from '../hooks/useAuth.js'
 
 const LoginForm = () => {
@@ -74,12 +73,13 @@ const LoginForm = () => {
               <label className="text-xs sm:text-sm font-medium text-shadow-black">
                 Password
               </label>
-              <a
+              {/* <a
                 href="#"
                 className="text-xs sm:text-sm text-blue-500 hover:underline"
               >
                 Forgot password?
-              </a>
+              </a> */}
+              <Link to="/forgot-password" className="text-xs sm:text-sm text-blue-500 hover:underline">Forgot password?</Link>
             </div>
 
             <input
@@ -112,9 +112,10 @@ const LoginForm = () => {
         {/* Footer */}
         <p className="mt-5 sm:mt-6 text-center text-xs sm:text-sm">
           Don&apos;t have an account?{' '}
-          <a href="#" className="text-blue-500 hover:underline">
+          {/* <a href="#" className="text-blue-500 hover:underline">
             Sign up
-          </a>
+          </a> */}
+          <Link to="/signup" className="text-blue-500 hover:underline">Sign up</Link>
         </p>
       </div>
     </div>

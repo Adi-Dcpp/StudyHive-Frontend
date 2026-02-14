@@ -46,8 +46,18 @@ const SignUpForm = () => {
         return
       }
 
-      if (response.errors && typeof response.errors === 'object') {
-        setErrors(response.errors)
+      if (response.errors && Array.isArray(response.errors)) {
+        const formattedErrors = {}
+
+        response.errors.forEach((err) => {
+          if (err.field) {
+            formattedErrors[err.field] = err.message
+          } else {
+            formattedErrors.general = err.message
+          }
+        })
+
+        setErrors(formattedErrors)
         return
       }
 
@@ -239,7 +249,7 @@ const SignUpForm = () => {
         {/* Footer */}
         <p className="mt-5 sm:mt-6 text-center text-xs sm:text-sm">
           Already have an account?{' '}
-          <Link to="/signin" className="text-blue-500 hover:underline">
+          <Link to="/login" className="text-blue-500 hover:underline">
             Sign In
           </Link>
         </p>

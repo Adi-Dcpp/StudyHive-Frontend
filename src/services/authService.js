@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const API = axios.create({
-  baseURL: 'http://localhost:8000/api/v1',
+  baseURL: import.meta.env.VITE_API_URL,
   withCredentials: true,
 })
 
@@ -13,6 +13,7 @@ export const logoutUser = () => API.post('/auth/logout')
 
 export const registerUser = (data) => API.post('/auth/register', data)
 
-export const resendEmailVerification = (data) => API.post('/auth/resent-email-verification',data);
+export const resendEmailVerification = (data) =>
+  API.post('/auth/resend-email-verification', data)
 
 export default API

@@ -13,6 +13,7 @@ import AppLayout from '../layouts/AppLayout'
 import DashboardHome from '../pages/DashboardHome'
 import ProtectedRoute from './ProtectedRoutes'
 import EmailVerification from '../pages/auth/EmailVerification'
+import EmailVerified from '../components/EmailVerified'
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -22,6 +23,7 @@ export const router = createBrowserRouter(
       <Route path="/signup" element={<SignUp />} />
       <Route path="/verify-email" element={<EmailVerification />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/email-verified" element={<EmailVerified />} />
 
       <Route element={<ProtectedRoute />}>
         <Route path="/dashboard" element={<AppLayout />}>
