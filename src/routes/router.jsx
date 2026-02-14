@@ -14,6 +14,7 @@ import DashboardHome from '../pages/DashboardHome'
 import ProtectedRoute from './ProtectedRoutes'
 import EmailVerification from '../pages/auth/EmailVerification'
 import EmailVerified from '../components/EmailVerified'
+import ResetPassword from '../pages/auth/ResetPassword'
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -24,6 +25,8 @@ export const router = createBrowserRouter(
       <Route path="/verify-email" element={<EmailVerification />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/email-verified" element={<EmailVerified />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password/:token" element={<ResetPassword />} />
 
       <Route element={<ProtectedRoute />}>
         <Route path="/dashboard" element={<AppLayout />}>

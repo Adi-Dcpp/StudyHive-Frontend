@@ -4,6 +4,8 @@ import {
   logoutUser,
   getCurrentUser,
   registerUser,
+  forgotPassword as forgotPasswordService,
+resetPassword as resetPasswordService
 } from "../services/authService";
 
 export const AuthContext = createContext();
@@ -44,6 +46,16 @@ export const AuthProvider = ({ children }) => {
     return response;
   }
 
+  const forgotPassword = async (data) => {
+    const response = await forgotPasswordService(data)
+    return response;
+  }
+
+  const resetPassword = async (token, data) => {
+  const response = await resetPasswordService(token, data)
+  return response
+}
+
   return (
     <AuthContext.Provider
       value={{
@@ -53,6 +65,8 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         signUp,
+        forgotPassword,
+        resetPassword
       }}
     >
       {children}
