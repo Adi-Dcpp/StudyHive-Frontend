@@ -1,6 +1,27 @@
-import React from 'react'
+import React, { useState } from 'react'
+import { loginUser, getCurrentUser } from '../services/authService.js'
+import { useNavigate } from 'react-router-dom'
+import useAuth from "../hooks/useAuth.js";
 
 const LoginForm = () => {
+
+  // Controlled state
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+
+const { login } = useAuth();
+const navigate = useNavigate();
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  try {
+    await login({ email, password });
+    navigate("/dashboard", { replace: true });
+  } catch (error) {
+    console.log("Login error:", error.response?.data);
+  }
+};
   return (
     <div className="flex items-center justify-center px-4 sm:px-6">
       <div
@@ -26,7 +47,7 @@ const LoginForm = () => {
         </div>
 
         {/* Form */}
-        <form className="space-y-4 sm:space-y-5">
+        <form className="space-y-4 sm:space-y-5" onSubmit={handleSubmit}>
           {/* Email */}
           <div className="flex flex-col gap-1">
             <label className="text-xs sm:text-sm font-medium text-black">
@@ -42,6 +63,9 @@ const LoginForm = () => {
                          placeholder:text-black
                          focus:outline-none
                          focus:ring-2 focus:ring-blue-500"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
             />
           </div>
 
@@ -69,6 +93,9 @@ const LoginForm = () => {
                          placeholder:text-gray-400
                          focus:outline-none
                          focus:ring-2 focus:ring-blue-500"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
             />
           </div>
 
