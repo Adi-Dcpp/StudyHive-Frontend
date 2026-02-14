@@ -16,6 +16,17 @@ src/
     Sidebar.jsx
     SignUpForm.jsx
     Topbar.jsx
+    landing/
+      ContactSection.jsx
+      CTASection.jsx
+      FadeInSection.jsx
+      FeaturesSection.jsx
+      Footer.jsx
+      HeroSection.jsx
+      HowItWorks.jsx
+      Navbar.jsx
+      RolesSection.jsx
+      SecuritySection.jsx
   contexts/
     AuthContext.jsx
   hooks/
@@ -23,6 +34,8 @@ src/
   layouts/
     AppLayout.jsx
   pages/
+    DashboardHome.jsx
+    Landing.jsx
     auth/
       EmailVerification.jsx
       ForgotPassword.jsx
@@ -30,11 +43,9 @@ src/
       SignUp.jsx
   routes/
     ProtectedRoutes.jsx
+    router.jsx
   services/
     authService.js
-  api/
-  auth/
-  utils/
 ```
 
 ## Contents
@@ -47,7 +58,7 @@ src/
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { RouterProvider } from 'react-router-dom'
-import { router } from './routes/ProtectedRoutes.jsx' // adjust path
+import { router } from './routes/router.jsx'
 import { AuthProvider } from './contexts/AuthContext'
 import './index.css'
 
@@ -80,51 +91,62 @@ function App() {
 }
 
 export default App
-
 ```
 
-### src/routes/ProtectedRoutes.jsx
+### src/routes/router.jsx
 
 ```jsx
-import React from 'react'
 import {
   createBrowserRouter,
   createRoutesFromElements,
   Route,
   Navigate,
-  Outlet,
 } from 'react-router-dom'
 
-import AppLayout from '../layouts/AppLayout.jsx'
-import Login from '../pages/auth/Login.jsx'
-import useAuth from '../hooks/useAuth.js'
-
-const ProtectedRoutes = () => {
-  const { user } = useAuth()
-
-  if (!user) {
-    return <Navigate to="/login" replace />
-  }
-
-  return <Outlet />
-}
+import Landing from '../pages/Landing'
+import Login from '../pages/auth/Login'
+import SignUp from '../pages/auth/SignUp'
+import ForgotPassword from '../pages/auth/ForgotPassword'
+import AppLayout from '../layouts/AppLayout'
+import DashboardHome from '../pages/DashboardHome'
+import ProtectedRoute from './ProtectedRoutes'
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
     <>
-      {/* Public Route */}
+      <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<SignUp />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
 
-      {/* Protected Wrapper */}
-      <Route element={<ProtectedRoutes />}>
-        <Route path="/dashboard" element={<AppLayout />} />
+      <Route element={<ProtectedRoute />}>
+        <Route path="/dashboard" element={<AppLayout />}>
+          <Route index element={<DashboardHome />} />
+        </Route>
       </Route>
 
-      {/* Default Redirect */}
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </>
   )
 )
+```
+
+### src/routes/ProtectedRoutes.jsx
+
+```jsx
+import { Navigate, Outlet } from 'react-router-dom'
+import useAuth from '../hooks/useAuth'
+
+const ProtectedRoute = () => {
+  const { user, loading } = useAuth()
+
+  if (loading) return null
+  if (!user) return <Navigate to="/login" replace />
+
+  return <Outlet />
+}
+
+export default ProtectedRoute
 ```
 
 ### src/services/authService.js
@@ -234,17 +256,61 @@ export const AuthProvider = ({ children }) => {
 }
 ```
 
-### src/components/Sidebar.jsx
+### src/hooks/useAuth.js
+
+```javascript
+import { useContext } from 'react'
+import { AuthContext } from '../contexts/AuthContext.jsx'
+
+const useAuth = () => {
+  return useContext(AuthContext)
+}
+
+export default useAuth
+```
+
+### src/components/AuthHeader.jsx
 
 ```jsx
 import React from 'react'
-import logo from '../assets/logo.png'
 
-const Sidebar = () => {
-  return <div></div>
+const AuthHeader = () => {
+  return (
+    <div className="flex flex-col items-center justify-center py-2 sm:py-5 text-center space-y-2">
+      <img
+        src="/src/assets/logo.png"
+        alt="StudyHive Logo"
+        className="h-16 sm:h-18 md:h-20 w-auto"
+      />
+
+      <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray mt-0.5">
+        Welcome To StudyHive
+      </h2>
+
+      <h3 className="text-gray-400 text-xs sm:text-sm md:text-base">
+        Collaborative learning made simple
+      </h3>
+    </div>
+  )
 }
 
-export default Sidebar
+export default AuthHeader
+```
+
+### src/components/AuthFooter.jsx
+
+```jsx
+import React from 'react'
+
+const AuthFooter = () => {
+  return (
+    <div className="py-4 text-center text-xs text-gray-400">
+      By continuing, you agree to our Terms of Service and Privacy Policy
+    </div>
+  )
+}
+
+export default AuthFooter
 ```
 
 ### src/components/LoginForm.jsx
@@ -374,50 +440,6 @@ const LoginForm = () => {
 }
 
 export default LoginForm
-```
-
-### src/components/AuthHeader.jsx
-
-```jsx
-import React from 'react'
-
-const AuthHeader = () => {
-  return (
-    <div className="flex flex-col items-center justify-center py-2 sm:py-5 text-center space-y-2">
-      <img
-        src="/src/assets/logo.png"
-        alt="StudyHive Logo"
-        className="h-16 sm:h-18 md:h-20 w-auto"
-      />
-
-      <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray mt-0.5">
-        Welcome To StudyHive
-      </h2>
-
-      <h3 className="text-gray-400 text-xs sm:text-sm md:text-base">
-        Collaborative learning made simple
-      </h3>
-    </div>
-  )
-}
-
-export default AuthHeader
-```
-
-### src/components/AuthFooter.jsx
-
-```jsx
-import React from 'react'
-
-const AuthFooter = () => {
-  return (
-    <div className="py-4 text-center text-xs text-gray-400">
-      By continuing, you agree to our Terms of Service and Privacy Policy
-    </div>
-  )
-}
-
-export default AuthFooter
 ```
 
 ### src/components/SignUpForm.jsx
@@ -576,6 +598,19 @@ const SignUpForm = () => {
 export default SignUpForm
 ```
 
+### src/components/Sidebar.jsx
+
+```jsx
+import React from 'react'
+import logo from '../assets/logo.png'
+
+const Sidebar = () => {
+  return <div></div>
+}
+
+export default Sidebar
+```
+
 ### src/components/Topbar.jsx
 
 ```jsx
@@ -588,40 +623,466 @@ const Topbar = () => {
 export default Topbar
 ```
 
-### src/hooks/useAuth.js
-
-```javascript
-import { useContext } from 'react'
-import { AuthContext } from '../contexts/AuthContext.jsx'
-
-const useAuth = () => {
-  return useContext(AuthContext)
-}
-
-export default useAuth
-```
-
-### src/pages/auth/SignUp.jsx
+### src/components/landing/FadeInSection.jsx
 
 ```jsx
-import React from 'react'
-import AuthHeader from '../../components/AuthHeader'
-import AuthFooter from '../../components/AuthFooter'
-import SignUpForm from '../../components/SignUpForm'
+import { motion } from 'framer-motion'
 
-const SignUp = () => {
+const FadeInSection = ({ children, delay = 0 }) => {
   return (
-    <div className="min-h-screen flex flex-col">
-      <div className="flex flex-col justify-center grow">
-        <AuthHeader />
-        <SignUpForm />
-      </div>
-      <AuthFooter />
-    </div>
+    <motion.div
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{
+        duration: 0.6,
+        delay: delay,
+        ease: 'easeOut',
+      }}
+    >
+      {children}
+    </motion.div>
   )
 }
 
-export default SignUp
+export default FadeInSection
+```
+
+### src/components/landing/HeroSection.jsx
+
+```jsx
+import { Link } from 'react-router-dom'
+import FadeInSection from './FadeInSection'
+
+const HeroSection = () => {
+  return (
+    <section className="bg-gray-50 pt-32 pb-20">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        <FadeInSection>
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* LEFT SIDE */}
+            <div>
+              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 leading-tight">
+                Organize. Collaborate.
+                <span className="text-indigo-600"> Succeed Together.</span>
+              </h1>
+
+              <p className="mt-6 text-lg text-gray-600">
+                StudyHive helps mentors and learners build structured study
+                groups, track learning goals, manage assignments, and
+                collaborate efficiently in one powerful platform.
+              </p>
+
+              <div className="mt-8 flex flex-wrap gap-4">
+                <Link
+                  to="/signup"
+                  className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-medium transition-all duration-300 hover:bg-indigo-700 hover:scale-105"
+                >
+                  Get Started
+                </Link>
+
+                <Link
+                  to="/login"
+                  className="px-6 py-3 border border-gray-300 rounded-lg font-medium text-gray-700 transition-all duration-300 hover:border-indigo-600 hover:text-indigo-600"
+                >
+                  Login
+                </Link>
+              </div>
+            </div>
+
+            {/* RIGHT SIDE - DASHBOARD MOCKUP */}
+            <div className="relative">
+              <div className="bg-white rounded-2xl shadow-xl p-6 space-y-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="font-semibold text-gray-800">
+                    Web Development Group
+                  </h3>
+                  <span className="text-sm bg-emerald-100 text-emerald-600 px-3 py-1 rounded-full">
+                    Active
+                  </span>
+                </div>
+
+                <div className="bg-gray-100 p-4 rounded-lg">
+                  <p className="text-sm text-gray-500">Goal Progress</p>
+                  <div className="mt-2 h-2 bg-gray-300 rounded-full">
+                    <div className="h-2 bg-indigo-600 rounded-full w-2/3"></div>
+                  </div>
+                </div>
+
+                <div className="bg-gray-100 p-4 rounded-lg">
+                  <p className="text-sm font-medium text-gray-700">
+                    Assignment Status
+                  </p>
+                  <div className="mt-3 flex gap-3 text-xs">
+                    <span className="bg-yellow-100 text-yellow-600 px-2 py-1 rounded-full">
+                      Pending
+                    </span>
+                    <span className="bg-blue-100 text-blue-600 px-2 py-1 rounded-full">
+                      Submitted
+                    </span>
+                    <span className="bg-emerald-100 text-emerald-600 px-2 py-1 rounded-full">
+                      Reviewed
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </FadeInSection>
+      </div>
+    </section>
+  )
+}
+
+export default HeroSection
+```
+
+### src/components/landing/FeaturesSection.jsx
+
+```jsx
+import FadeInSection from './FadeInSection'
+
+const features = [
+  'Secure Authentication',
+  'Study Group Management',
+  'Learning Goal Tracking',
+  'Assignment & Submissions',
+  'File & Resource Sharing',
+  'Progress Monitoring Dashboard',
+]
+
+const FeaturesSection = () => {
+  return (
+    <section id="features" className="py-20 bg-white">
+      <div className="max-w-7xl mx-auto px-6">
+        <FadeInSection>
+          <h2 className="text-3xl font-bold text-center text-gray-900">
+            Powerful Features
+          </h2>
+
+          <div className="mt-12 grid md:grid-cols-3 gap-8">
+            {features.map((feature, index) => (
+              <div
+                key={index}
+                className="p-6 bg-gray-50 rounded-xl shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
+              >
+                <h3 className="font-semibold text-gray-800">{feature}</h3>
+              </div>
+            ))}
+          </div>
+        </FadeInSection>
+      </div>
+    </section>
+  )
+}
+
+export default FeaturesSection
+```
+
+### src/components/landing/RolesSection.jsx
+
+```jsx
+import FadeInSection from './FadeInSection'
+
+const RolesSection = () => {
+  return (
+    <section className="py-20 bg-gray-50">
+      <div className="max-w-7xl mx-auto px-6">
+        <FadeInSection>
+          <div className="grid md:grid-cols-2 gap-12">
+            <div className="bg-white p-8 rounded-xl shadow-md transition-all duration-300 hover:shadow-2xl">
+              <h3 className="text-xl font-bold text-indigo-600">For Mentors</h3>
+              <ul className="mt-6 space-y-3 text-gray-600">
+                <li>Create Study Groups</li>
+                <li>Assign Learning Goals</li>
+                <li>Review Submissions</li>
+                <li>Post Announcements</li>
+              </ul>
+            </div>
+
+            <div className="bg-white p-8 rounded-xl shadow-md transition-all duration-300 hover:shadow-2xl">
+              <h3 className="text-xl font-bold text-emerald-600">
+                For Learners
+              </h3>
+              <ul className="mt-6 space-y-3 text-gray-600">
+                <li>Join Groups</li>
+                <li>Track Goals</li>
+                <li>Submit Assignments</li>
+                <li>Access Resources</li>
+              </ul>
+            </div>
+          </div>
+        </FadeInSection>
+      </div>
+    </section>
+  )
+}
+
+export default RolesSection
+```
+
+### src/components/landing/HowItWorks.jsx
+
+```jsx
+import FadeInSection from './FadeInSection'
+
+const steps = [
+  'Sign Up & Verify Email',
+  'Create or Join Study Group',
+  'Assign & Complete Goals',
+  'Track Progress & Collaborate',
+]
+
+const HowItWorks = () => {
+  return (
+    <section className="py-20 bg-white">
+      <div className="max-w-6xl mx-auto px-6">
+        <FadeInSection>
+          <h2 className="text-3xl font-bold text-center text-gray-900">
+            How It Works
+          </h2>
+
+          <div className="mt-12 grid md:grid-cols-4 gap-8 text-center">
+            {steps.map((step, index) => (
+              <div key={index} className="space-y-4">
+                <div className="w-12 h-12 mx-auto bg-indigo-600 text-white flex items-center justify-center rounded-full font-bold">
+                  {index + 1}
+                </div>
+                <p className="text-gray-600">{step}</p>
+              </div>
+            ))}
+          </div>
+        </FadeInSection>
+      </div>
+    </section>
+  )
+}
+
+export default HowItWorks
+```
+
+### src/components/landing/SecuritySection.jsx
+
+```jsx
+import FadeInSection from './FadeInSection'
+
+const SecuritySection = () => {
+  return (
+    <section className="py-20 bg-gray-50">
+      <div className="max-w-5xl mx-auto px-6 text-center">
+        <FadeInSection>
+          <h2 className="text-3xl font-bold text-gray-900">
+            Secure & Reliable
+          </h2>
+          <p className="mt-6 text-gray-600">
+            Role-based access control, secure file uploads, email verification,
+            and production-ready backend architecture ensure your learning
+            environment stays protected.
+          </p>
+        </FadeInSection>
+      </div>
+    </section>
+  )
+}
+
+export default SecuritySection
+```
+
+### src/components/landing/CTASection.jsx
+
+```jsx
+import { Link } from 'react-router-dom'
+import FadeInSection from './FadeInSection'
+
+const CTASection = () => {
+  return (
+    <section className="py-20 bg-indigo-600 text-white text-center">
+      <div className="max-w-4xl mx-auto px-6">
+        <FadeInSection>
+          <h2 className="text-3xl font-bold">
+            Ready to level up your study workflow?
+          </h2>
+
+          <Link
+            to="/signup"
+            className="mt-8 inline-block px-8 py-3 bg-white text-indigo-600 rounded-lg font-medium transition-all duration-300 hover:scale-105"
+          >
+            Create Your StudyHive
+          </Link>
+        </FadeInSection>
+      </div>
+    </section>
+  )
+}
+
+export default CTASection
+```
+
+### src/components/landing/ContactSection.jsx
+
+```jsx
+import FadeInSection from './FadeInSection'
+
+const ContactSection = () => {
+  return (
+    <section id="contact" className="py-20 bg-white">
+      <div className="max-w-5xl mx-auto px-6 text-center">
+        <FadeInSection>
+          <h2 className="text-3xl font-bold text-gray-900">Connect With Us</h2>
+
+          <p className="mt-6 text-gray-600">
+            StudyHive is an open collaborative project. Feel free to explore the
+            codebase or connect with the creator.
+          </p>
+
+          <div className="mt-8 flex justify-center gap-6">
+            <a
+              href="https://github.com/Adi-Dcpp"
+              target="_blank"
+              rel="noreferrer"
+              className="px-6 py-3 bg-gray-900 text-white rounded-lg hover:scale-105 transition-all duration-300"
+            >
+              GitHub
+            </a>
+
+            <a
+              href="mailto:luffy1120adi@gmail.com"
+              className="px-6 py-3 border border-gray-300 rounded-lg hover:border-indigo-600 hover:text-indigo-600 transition-all duration-300"
+            >
+              Email
+            </a>
+          </div>
+        </FadeInSection>
+      </div>
+    </section>
+  )
+}
+
+export default ContactSection
+```
+
+### src/components/landing/Navbar.jsx
+
+```jsx
+import { Link } from 'react-router-dom'
+import logo from '../../assets/logo.png'
+
+const Navbar = () => {
+  return (
+    <header className="bg-white shadow-sm fixed w-full z-50">
+      <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+        {/* LEFT - Logo */}
+        <Link to="/" className="flex items-center gap-3">
+          <img src={logo} alt="StudyHive Logo" className="h-10 w-auto" />
+          {/* <span className="text-xl font-bold text-gray-900">
+            StudyHive
+          </span> */}
+        </Link>
+
+        {/* RIGHT - Nav Links */}
+        <div className="hidden md:flex items-center gap-8 text-gray-600 font-medium">
+          <a href="#features" className="hover:text-indigo-600 transition">
+            Features
+          </a>
+          <a href="#contact" className="hover:text-indigo-600 transition">
+            Contact
+          </a>
+
+          <Link
+            to="/login"
+            className="px-5 py-2 border border-gray-300 rounded-lg hover:border-indigo-600 hover:text-indigo-600 transition"
+          >
+            Login
+          </Link>
+
+          <Link
+            to="/signup"
+            className="px-5 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+          >
+            Get Started
+          </Link>
+        </div>
+      </div>
+    </header>
+  )
+}
+
+export default Navbar
+```
+
+### src/components/landing/Footer.jsx
+
+```jsx
+const Footer = () => {
+  return (
+    <footer className="bg-gray-900 text-gray-400 py-10">
+      <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
+        <p>© {new Date().getFullYear()} StudyHive. All rights reserved.</p>
+
+        <div className="flex gap-6 mt-4 md:mt-0">
+          <a href="#" className="hover:text-white transition">
+            Features
+          </a>
+          <a href="#" className="hover:text-white transition">
+            About
+          </a>
+          <a href="#" className="hover:text-white transition">
+            Contact
+          </a>
+          <a href="#" className="hover:text-white transition">
+            GitHub
+          </a>
+        </div>
+      </div>
+    </footer>
+  )
+}
+
+export default Footer
+```
+
+### src/pages/Landing.jsx
+
+```jsx
+import Navbar from '../components/landing/Navbar'
+import HeroSection from '../components/landing/HeroSection'
+import FeaturesSection from '../components/landing/FeaturesSection'
+import RolesSection from '../components/landing/RolesSection'
+import HowItWorks from '../components/landing/HowItWorks'
+import SecuritySection from '../components/landing/SecuritySection'
+import CTASection from '../components/landing/CTASection'
+import ContactSection from '../components/landing/ContactSection'
+import Footer from '../components/landing/Footer'
+
+const Landing = () => {
+  return (
+    <>
+      <Navbar />
+      <HeroSection />
+      <FeaturesSection />
+      <RolesSection />
+      <HowItWorks />
+      <SecuritySection />
+      <CTASection />
+      <ContactSection />
+      <Footer />
+    </>
+  )
+}
+
+export default Landing
+```
+
+### src/pages/DashboardHome.jsx
+
+```jsx
+import React from 'react'
+
+const DashboardHome = () => {
+  return <div>DashboardHome</div>
+}
+
+export default DashboardHome
 ```
 
 ### src/pages/auth/Login.jsx
@@ -646,6 +1107,29 @@ const Login = () => {
 }
 
 export default Login
+```
+
+### src/pages/auth/SignUp.jsx
+
+```jsx
+import React from 'react'
+import AuthHeader from '../../components/AuthHeader'
+import AuthFooter from '../../components/AuthFooter'
+import SignUpForm from '../../components/SignUpForm'
+
+const SignUp = () => {
+  return (
+    <div className="min-h-screen flex flex-col">
+      <div className="flex flex-col justify-center grow">
+        <AuthHeader />
+        <SignUpForm />
+      </div>
+      <AuthFooter />
+    </div>
+  )
+}
+
+export default SignUp
 ```
 
 ### src/pages/auth/ForgotPassword.jsx
