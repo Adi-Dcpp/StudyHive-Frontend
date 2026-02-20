@@ -41,6 +41,7 @@ src/
       EmailVerification.jsx
       ForgotPassword.jsx
       Login.jsx
+      ResetPassword.jsx
       SignUp.jsx
   routes/
     ProtectedRoutes.jsx
@@ -107,6 +108,7 @@ import DashboardHome from '../pages/DashboardHome'
 import ProtectedRoute from './ProtectedRoutes'
 import EmailVerification from '../pages/auth/EmailVerification'
 import EmailVerified from '../components/EmailVerified'
+import ResetPassword from '../pages/auth/ResetPassword'
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -117,6 +119,8 @@ export const router = createBrowserRouter(
       <Route path="/verify-email" element={<EmailVerification />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/email-verified" element={<EmailVerified />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password/:token" element={<ResetPassword />} />
 
       <Route element={<ProtectedRoute />}>
         <Route path="/dashboard" element={<AppLayout />}>
@@ -158,6 +162,46 @@ const API = axios.create({
   withCredentials: true,
 })
 
+// ✅ Attach access token automatically
+API.interceptors.request.use((config) => {
+  const token = localStorage.getItem('accessToken')
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
+
+// ✅ Auto refresh on 401
+API.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config
+
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !originalRequest.url.includes('/auth/refresh-token')
+    ) {
+      originalRequest._retry = true
+
+      try {
+        const res = await API.post('/auth/refresh-token')
+        const newAccessToken = res.data.data.accessToken
+
+        localStorage.setItem('accessToken', newAccessToken)
+
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`
+        return API(originalRequest)
+      } catch (refreshError) {
+        localStorage.removeItem('accessToken')
+        window.location.href = '/login'
+      }
+    }
+
+    return Promise.reject(error)
+  }
+)
+
 export const loginUser = (data) => API.post('/auth/login', data)
 
 export const getCurrentUser = () => API.get('/auth/me')
@@ -167,7 +211,12 @@ export const logoutUser = () => API.post('/auth/logout')
 export const registerUser = (data) => API.post('/auth/register', data)
 
 export const resendEmailVerification = (data) =>
-  API.post('/auth/resend-email-verification', { email: data })
+  API.post('/auth/resend-email-verification', data)
+
+export const forgotPassword = (data) => API.post('/auth/forgot-password', data)
+
+export const resetPassword = (token, data) =>
+  API.post(`/auth/reset-password/${token}`, data)
 
 export default API
 ```
@@ -214,6 +263,8 @@ import {
   logoutUser,
   getCurrentUser,
   registerUser,
+  forgotPassword as forgotPasswordService,
+  resetPassword as resetPasswordService,
 } from '../services/authService'
 
 export const AuthContext = createContext()
@@ -225,9 +276,16 @@ export const AuthProvider = ({ children }) => {
   // Load user on app start
   useEffect(() => {
     const loadUser = async () => {
+      const token = localStorage.getItem('accessToken')
+
+      if (!token) {
+        setLoading(false)
+        return
+      }
+
       try {
         const { data } = await getCurrentUser()
-        setUser(data.data)
+        setUser(data.data.user)
       } catch (err) {
         setUser(null)
       } finally {
@@ -239,18 +297,38 @@ export const AuthProvider = ({ children }) => {
   }, [])
 
   const login = async (credentials) => {
-    await loginUser(credentials)
+    const response = await loginUser(credentials)
+
+    const accessToken = response.data.data.accessToken
+    localStorage.setItem('accessToken', accessToken)
+
     const { data } = await getCurrentUser()
-    setUser(data.data)
+    setUser(data.data.user)
   }
 
   const logout = async () => {
-    await logoutUser()
+    localStorage.removeItem('accessToken')
     setUser(null)
+
+    try {
+      await logoutUser()
+    } catch (err) {
+      console.log('Logout API failed, but user cleared locally')
+    }
   }
 
   const signUp = async (data) => {
     const response = await registerUser(data)
+    return response
+  }
+
+  const forgotPassword = async (data) => {
+    const response = await forgotPasswordService(data)
+    return response
+  }
+
+  const resetPassword = async (token, data) => {
+    const response = await resetPasswordService(token, data)
     return response
   }
 
@@ -263,6 +341,8 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         signUp,
+        forgotPassword,
+        resetPassword,
       }}
     >
       {children}
@@ -1441,9 +1521,52 @@ export default EmailVerification
 ### src/pages/auth/ForgotPassword.jsx
 
 ```jsx
-import React from 'react'
+import React, { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import useAuth from '../../hooks/useAuth.js'
 
 const ForgotPassword = () => {
+  const [email, setEmail] = useState('')
+  const [error, setError] = useState(null)
+  const [success, setSuccess] = useState(null)
+  const [loading, setLoading] = useState(false)
+
+  const { forgotPassword } = useAuth()
+
+  const navigate = useNavigate()
+
+  const submitHandler = async (e) => {
+    e.preventDefault()
+    setError(null)
+    setSuccess(null)
+
+    if (!email.trim()) {
+      setError('Email is required')
+      return
+    }
+
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      setError('Invalid email format')
+      return
+    }
+
+    try {
+      setLoading(true)
+
+      const response = await forgotPassword({ email })
+
+      setSuccess(response.data.message)
+
+      setTimeout(() => {
+        navigate('/login')
+      }, 2000)
+    } catch (err) {
+      setError(err.response?.data?.message || 'Something went wrong')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 sm:px-6">
       <div className="w-full flex flex-col items-center justify-center mb-6 gap-0.5">
@@ -1461,23 +1584,31 @@ const ForgotPassword = () => {
           </p>
         </div>
         <div>
-          <form>
+          <form onSubmit={submitHandler}>
             <div className="flex flex-col gap-3">
               <label className="font-semibold text-xl">Email</label>
               <input
                 type="email"
                 placeholder="xyz@example.com"
                 className="w-full rounded-lg border border-black px-3 sm:px-4 py-2 sm:py-2.5 bg-transparent text-black placeholder:text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
+            {error && <p className="text-red-500 mt-3 text-sm">{error}</p>}
+
+            {success && (
+              <p className="text-green-600 mt-3 text-sm">{success}</p>
+            )}
             <div className="mt-2.5">
               <button
                 type="submit"
+                disabled={loading}
                 className="w-full rounded-lg bg-indigo-600 py-2 sm:py-2.5
                        text-white font-medium
                        hover:bg-indigo-700 transition-colors"
               >
-                Send reset link
+                {loading ? 'Sending...' : 'Send reset link'}
               </button>
             </div>
           </form>
@@ -1488,6 +1619,107 @@ const ForgotPassword = () => {
 }
 
 export default ForgotPassword
+```
+
+### src/pages/auth/ResetPassword.jsx
+
+```jsx
+import React, { useState } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+import useAuth from '../../hooks/useAuth'
+
+const ResetPassword = () => {
+  const { resetPassword } = useAuth()
+  const { token } = useParams()
+  const navigate = useNavigate()
+
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [error, setError] = useState(null)
+  const [success, setSuccess] = useState(null)
+  const [loading, setLoading] = useState(false)
+
+  const submitHandler = async (e) => {
+    e.preventDefault()
+    setError(null)
+    setSuccess(null)
+
+    if (!password.trim()) {
+      setError('New password is required')
+      return
+    }
+
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters')
+      return
+    }
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match')
+      return
+    }
+
+    try {
+      setLoading(true)
+
+      const response = await resetPassword(token, { newPassword: password })
+
+      setSuccess(response.data.message)
+
+      setTimeout(() => {
+        navigate('/login')
+      }, 2000)
+    } catch (err) {
+      setError(
+        err.response?.data?.message || 'Reset link is invalid or expired'
+      )
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center px-4">
+      <div className="w-full max-w-md border p-8 rounded-xl shadow-lg">
+        <h2 className="text-2xl font-semibold mb-4">Set New Password</h2>
+
+        <form onSubmit={submitHandler}>
+          <div className="flex flex-col gap-3">
+            <input
+              type="password"
+              placeholder="New Password"
+              className="border px-4 py-2 rounded-lg"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+
+            <input
+              type="password"
+              placeholder="Confirm Password"
+              className="border px-4 py-2 rounded-lg"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+          </div>
+
+          {error && <p className="text-red-500 mt-3 text-sm">{error}</p>}
+
+          {success && <p className="text-green-600 mt-3 text-sm">{success}</p>}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-indigo-600 text-white py-2 rounded-lg mt-4 disabled:opacity-50"
+          >
+            {loading ? 'Updating...' : 'Update Password'}
+          </button>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+export default ResetPassword
 ```
 
 ### src/pages/auth/Login.jsx
