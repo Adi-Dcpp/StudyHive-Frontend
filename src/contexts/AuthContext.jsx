@@ -1,60 +1,77 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, useEffect, useState } from 'react'
 import {
   loginUser,
   logoutUser,
   getCurrentUser,
   registerUser,
   forgotPassword as forgotPasswordService,
-resetPassword as resetPasswordService
-} from "../services/authService";
+  resetPassword as resetPasswordService,
+} from '../services/authService'
 
-export const AuthContext = createContext();
+export const AuthContext = createContext()
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
 
   // Load user on app start
   useEffect(() => {
     const loadUser = async () => {
-      try {
-        const { data } = await getCurrentUser();
-        setUser(data.data.user);
-      } catch (err) {
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    };
+      const token = localStorage.getItem('accessToken')
 
-    loadUser();
-  }, []);
+      if (!token) {
+        setLoading(false)
+        return
+      }
+
+      try {
+        const { data } = await getCurrentUser()
+        setUser(data.data.user)
+      } catch (err) {
+        setUser(null)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadUser()
+  }, [])
 
   const login = async (credentials) => {
-    await loginUser(credentials);
-    const { data } = await getCurrentUser();
-    setUser(data.data);
-  };
+    const response = await loginUser(credentials)
+
+    const accessToken = response.data.data.accessToken
+    localStorage.setItem('accessToken', accessToken)
+
+    const { data } = await getCurrentUser()
+    setUser(data.data.user)
+  }
 
   const logout = async () => {
-    await logoutUser();
-    setUser(null);
-  };
+  localStorage.removeItem('accessToken')
+  setUser(null)
+
+  try {
+    await logoutUser()
+  } catch (err) {
+    console.log('Logout API failed, but user cleared locally')
+  }
+}
 
   const signUp = async (data) => {
-    const response = await registerUser(data);
-    return response;
+    const response = await registerUser(data)
+    return response
   }
 
   const forgotPassword = async (data) => {
     const response = await forgotPasswordService(data)
-    return response;
+    return response
   }
 
   const resetPassword = async (token, data) => {
-  const response = await resetPasswordService(token, data)
-  return response
-}
+    const response = await resetPasswordService(token, data)
+    return response
+  }
 
   return (
     <AuthContext.Provider
@@ -66,10 +83,10 @@ export const AuthProvider = ({ children }) => {
         logout,
         signUp,
         forgotPassword,
-        resetPassword
+        resetPassword,
       }}
     >
       {children}
     </AuthContext.Provider>
-  );
-};
+  )
+}
