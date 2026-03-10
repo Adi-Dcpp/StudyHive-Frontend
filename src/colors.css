@@ -1,0 +1,99 @@
+/* =========================================
+   STUDYHIVE COLOR SYSTEM
+   Clean Semantic Token Setup
+========================================= */
+
+/* ---------- LIGHT THEME ---------- */
+
+:root {
+
+  /* Brand */
+  --primary: 79 70 229;
+  --primary-hover: 67 56 202;
+  --primary-soft: 224 231 255;
+
+  /* Backgrounds */
+  --bg: 248 250 252;
+  --surface: 255 255 255;
+  --surface-2: 241 245 249;
+
+  /* Text */
+  --text: 15 23 42;
+  --text-secondary: 71 85 105;
+  --text-muted: 148 163 184;
+
+  /* Borders */
+  --border: 226 232 240;
+  --border-strong: 203 213 225;
+
+  /* Status */
+  --success: 34 197 94;
+  --warning: 234 179 8;
+  --error: 239 68 68;
+  --info: 59 130 246;
+
+  /* Layout */
+  --navbar-bg: 255 255 255;
+  --sidebar-bg: 255 255 255;
+  --card-bg: 255 255 255;
+
+  /* Interaction */
+  --hover: 241 245 249;
+  --active: 226 232 240;
+  --focus-ring: 99 102 241;
+
+  /* Tables */
+  --table-header: 248 250 252;
+  --table-row-hover: 241 245 249;
+
+  /* Overlay */
+  --overlay: 15 23 42;
+}
+
+
+/* ---------- DARK THEME ---------- */
+
+[data-theme="dark"] {
+
+  /* Brand */
+  --primary: 99 102 241;
+  --primary-hover: 79 70 229;
+  --primary-soft: 55 48 163;
+
+  /* Backgrounds */
+  --bg: 15 23 42;
+  --surface: 30 41 59;
+  --surface-2: 51 65 85;
+
+  /* Text */
+  --text: 248 250 252;
+  --text-secondary: 203 213 225;
+  --text-muted: 148 163 184;
+
+  /* Borders */
+  --border: 71 85 105;
+  --border-strong: 100 116 139;
+
+  /* Status */
+  --success: 34 197 94;
+  --warning: 234 179 8;
+  --error: 239 68 68;
+  --info: 59 130 246;
+
+  /* Layout */
+  --navbar-bg: 15 23 42;
+  --sidebar-bg: 30 41 59;
+  --card-bg: 30 41 59;
+
+  /* Interaction */
+  --hover: 51 65 85;
+  --active: 71 85 105;
+  --focus-ring: 129 140 248;
+
+  /* Tables */
+  --table-header: 30 41 59;
+  --table-row-hover: 51 65 85;
+
+  /* Overlay */
+  --overlay: 0 0 0;
+}
