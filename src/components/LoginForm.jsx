@@ -14,8 +14,16 @@ const LoginForm = () => {
     e.preventDefault()
 
     try {
-      await login({ email, password })
-      navigate('/dashboard', { replace: true })
+      const loggedInUser = await login({ email, password })
+      const role = loggedInUser?.role
+
+      if (role === 'mentor') {
+        navigate('/mentor/dashboard', { replace: true })
+      } else if (role === 'learner') {
+        navigate('/learner/dashboard', { replace: true })
+      } else {
+        navigate('/mentor/dashboard', { replace: true })
+      }
     } catch (error) {
       console.log('Login error:', error.response?.data)
     }

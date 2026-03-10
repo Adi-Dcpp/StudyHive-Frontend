@@ -44,7 +44,9 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('accessToken', accessToken)
 
     const { data } = await getCurrentUser()
-    setUser(data.data.user)
+    const loggedInUser = data.data.user
+    setUser(loggedInUser)
+    return loggedInUser
   }
 
   const logout = async () => {

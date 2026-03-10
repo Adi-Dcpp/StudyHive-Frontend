@@ -9,12 +9,13 @@ import Landing from '../pages/Landing'
 import Login from '../pages/auth/Login'
 import SignUp from '../pages/auth/SignUp'
 import ForgotPassword from '../pages/auth/ForgotPassword'
-import AppLayout from '../layouts/AppLayout'
-import DashboardHome from '../pages/DashboardHome'
 import ProtectedRoute from './ProtectedRoutes'
 import EmailVerification from '../pages/auth/EmailVerification'
 import EmailVerified from '../components/EmailVerified'
 import ResetPassword from '../pages/auth/ResetPassword'
+
+import MentorLayout from '../layouts/MentorLayout'
+import MentorDashboard from '../pages/mentor/Dashboard'
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -28,9 +29,11 @@ export const router = createBrowserRouter(
       <Route path="/reset-password/:token" element={<ResetPassword />} />
 
       <Route element={<ProtectedRoute />}>
-        <Route path="/dashboard" element={<AppLayout />}>
-          <Route index element={<DashboardHome />} />
+        {/* Mentor routes */}
+        <Route path="/mentor" element={<MentorLayout />}>
+          <Route path="dashboard" element={<MentorDashboard />} />
         </Route>
+
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

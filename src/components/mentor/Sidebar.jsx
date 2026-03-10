@@ -37,7 +37,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
               key={item.name}
               to={item.path}
               onClick={toggleSidebar}
-              className="px-4 py-2 rounded-md hover:bg-[rgb(var(--hover))]"
+              className="px-4 py-2 rounded-md hover:bg-[rgb(var(--hover))] text-[rgb(var(--text))]"
             >
               {item.name}
             </Link>

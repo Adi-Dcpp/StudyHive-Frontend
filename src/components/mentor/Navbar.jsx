@@ -1,5 +1,5 @@
 import { FaUserCircle } from "react-icons/fa";
-import useTheme from "../hooks/useTheme";
+import useTheme from "../../hooks/useTheme";
 import logo from "../../assets/logo.png";
 import { Link } from "react-router-dom";
 import { FiMenu } from "react-icons/fi";
