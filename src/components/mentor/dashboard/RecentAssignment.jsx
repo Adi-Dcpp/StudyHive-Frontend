@@ -4,7 +4,7 @@ import { FiFileText } from "react-icons/fi";
 const RecentAssignments = ({ assignments }) => {
   if (!assignments || assignments.length === 0) {
     return (
-      <div className="p-6 rounded-xl border border-[rgb(var(--border))] bg-[rgb(var(--card-bg))] shadow-sm min-h-[220px]">
+      <div className="p-6 rounded-xl border border-[rgb(var(--border))] bg-[rgb(var(--card-bg))] shadow-sm min-h-220px">
         <h2 className="text-lg font-semibold text-[rgb(var(--text))] mb-4">
           Recent Assignments
         </h2>
@@ -17,7 +17,7 @@ const RecentAssignments = ({ assignments }) => {
   }
 
   return (
-    <div className="p-6 rounded-xl border border-[rgb(var(--border))] bg-[rgb(var(--card-bg))] shadow-sm min-h-[260px]">
+    <div className="p-6 rounded-xl border border-[rgb(var(--border))] bg-[rgb(var(--card-bg))] shadow-sm min-h-260px">
       
       {/* Header */}
       <div className="flex items-center justify-between mb-5">

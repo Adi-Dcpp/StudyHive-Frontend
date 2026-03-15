@@ -20,7 +20,7 @@ const RecentSubmissions = ({ submissions }) => {
   };
 
   return (
-    <div className="p-6 rounded-xl border border-[rgb(var(--border))] bg-[rgb(var(--card-bg))] shadow-sm min-h-[260px]">
+    <div className="p-6 rounded-xl border border-[rgb(var(--border))] bg-[rgb(var(--card-bg))] shadow-sm min-h-260px">
 
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
