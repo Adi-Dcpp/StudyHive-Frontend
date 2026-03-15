@@ -12,23 +12,22 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
 
   return (
     <>
-      {/* Mobile Overlay */}
+      {/* Overlay for mobile */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/40 lg:hidden"
+          className="fixed inset-0 bg-black/40 z-30 lg:hidden"
           onClick={toggleSidebar}
         />
       )}
 
       <aside
         className={`
-        fixed lg:static
-        w-[280px] h-full
-        bg-[rgb(var(--surface))]
-        border-r border-[rgb(var(--border))]
-        transform transition-transform duration-300
-        ${isOpen ? "translate-x-0" : "-translate-x-full"}
-        lg:translate-x-0
+          fixed top-16 left-0 z-40
+          w-70 h-[calc(100vh-64px)]
+          bg-[rgb(var(--surface))]
+          border-r border-[rgb(var(--border))]
+          transform transition-transform duration-300
+          ${isOpen ? "translate-x-0" : "-translate-x-full"}
         `}
       >
         <nav className="flex flex-col p-4 gap-2">

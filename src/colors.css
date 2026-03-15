@@ -1,6 +1,6 @@
 /* =========================================
    STUDYHIVE COLOR SYSTEM
-   Clean Semantic Token Setup
+   Premium SaaS Palette
 ========================================= */
 
 /* ---------- LIGHT THEME ---------- */
@@ -10,25 +10,25 @@
   /* Brand */
   --primary: 79 70 229;
   --primary-hover: 67 56 202;
-  --primary-soft: 224 231 255;
+  --primary-soft: 235 233 255;
 
   /* Backgrounds */
-  --bg: 248 250 252;
+  --bg: 246 247 250;
   --surface: 255 255 255;
-  --surface-2: 241 245 249;
+  --surface-2: 240 242 246;
 
   /* Text */
-  --text: 15 23 42;
-  --text-secondary: 71 85 105;
-  --text-muted: 148 163 184;
+  --text: 17 24 39;
+  --text-secondary: 75 85 99;
+  --text-muted: 156 163 175;
 
   /* Borders */
-  --border: 226 232 240;
-  --border-strong: 203 213 225;
+  --border: 229 231 235;
+  --border-strong: 209 213 219;
 
   /* Status */
   --success: 34 197 94;
-  --warning: 234 179 8;
+  --warning: 245 158 11;
   --error: 239 68 68;
   --info: 59 130 246;
 
@@ -38,16 +38,16 @@
   --card-bg: 255 255 255;
 
   /* Interaction */
-  --hover: 241 245 249;
-  --active: 226 232 240;
+  --hover: 243 244 246;
+  --active: 229 231 235;
   --focus-ring: 99 102 241;
 
   /* Tables */
   --table-header: 248 250 252;
-  --table-row-hover: 241 245 249;
+  --table-row-hover: 243 244 246;
 
   /* Overlay */
-  --overlay: 15 23 42;
+  --overlay: 17 24 39;
 }
 
 
@@ -56,14 +56,14 @@
 [data-theme="dark"] {
 
   /* Brand */
-  --primary: 99 102 241;
-  --primary-hover: 79 70 229;
-  --primary-soft: 55 48 163;
+  --primary: 129 140 248;
+  --primary-hover: 99 102 241;
+  --primary-soft: 49 46 129;
 
   /* Backgrounds */
-  --bg: 15 23 42;
-  --surface: 30 41 59;
-  --surface-2: 51 65 85;
+  --bg: 10 14 26;
+  --surface: 20 25 40;
+  --surface-2: 32 38 58;
 
   /* Text */
   --text: 248 250 252;
@@ -71,28 +71,28 @@
   --text-muted: 148 163 184;
 
   /* Borders */
-  --border: 71 85 105;
-  --border-strong: 100 116 139;
+  --border: 45 55 75;
+  --border-strong: 71 85 105;
 
   /* Status */
   --success: 34 197 94;
-  --warning: 234 179 8;
+  --warning: 245 158 11;
   --error: 239 68 68;
   --info: 59 130 246;
 
   /* Layout */
-  --navbar-bg: 15 23 42;
-  --sidebar-bg: 30 41 59;
-  --card-bg: 30 41 59;
+  --navbar-bg: 10 14 26;
+  --sidebar-bg: 15 20 35;
+  --card-bg: 20 25 40;
 
   /* Interaction */
-  --hover: 51 65 85;
-  --active: 71 85 105;
+  --hover: 32 38 58;
+  --active: 45 55 75;
   --focus-ring: 129 140 248;
 
   /* Tables */
-  --table-header: 30 41 59;
-  --table-row-hover: 51 65 85;
+  --table-header: 20 25 40;
+  --table-row-hover: 32 38 58;
 
   /* Overlay */
   --overlay: 0 0 0;
