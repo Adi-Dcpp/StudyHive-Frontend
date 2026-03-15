@@ -12,29 +12,26 @@ const MentorLayout = () => {
   };
 
   return (
-    <div className="h-screen flex flex-col">
+    <div className="min-h-screen bg-[rgb(var(--bg))]">
 
       <Navbar toggleSidebar={toggleSidebar} />
 
-      <div className="flex flex-1">
+      <Sidebar
+        isOpen={isSidebarOpen}
+        toggleSidebar={toggleSidebar}
+      />
 
-        <Sidebar
-          isOpen={isSidebarOpen}
-          toggleSidebar={toggleSidebar}
-        />
-
-        {/* Dashboard Content */}
-        <main
-          className={`
-            flex-1 p-6 bg-[rgb(var(--bg))]
-            transition-all duration-300
-            ${isSidebarOpen ? "ml-70" : "ml-0"}
-          `}
-        >
-          <Outlet />
-        </main>
-
-      </div>
+      <main
+        className={`
+          pt-6
+          px-6
+          pb-6
+          transition-all duration-300
+          ${isSidebarOpen ? "ml-64" : "ml-0"}
+      `}
+      >
+        <Outlet />
+      </main>
 
     </div>
   );
