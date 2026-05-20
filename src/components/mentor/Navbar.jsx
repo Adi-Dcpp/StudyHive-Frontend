@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { FiMenu, FiLogOut } from "react-icons/fi";
 import { useContext } from "react";
 import { AuthContext } from "../../contexts/AuthContext";
+import NotificationBell from "../notification/NotificationBell";
 
 const Navbar = ({ toggleSidebar }) => {
   const { theme, toggleTheme } = useTheme();
@@ -54,6 +55,9 @@ const Navbar = ({ toggleSidebar }) => {
 
       {/* RIGHT */}
       <div className="flex items-center gap-5">
+
+        {/* Notification Bell */}
+        <NotificationBell />
 
         {/* Theme Toggle */}
         <button

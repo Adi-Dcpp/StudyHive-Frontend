@@ -11,7 +11,7 @@ import SignUp from '../pages/auth/SignUp'
 import ForgotPassword from '../pages/auth/ForgotPassword'
 import ProtectedRoute from './ProtectedRoutes'
 import EmailVerification from '../pages/auth/EmailVerification'
-import EmailVerified from '../components/EmailVerified'
+import EmailVerified from '../components/auth/EmailVerified'
 import ResetPassword from '../pages/auth/ResetPassword'
 
 import MentorLayout from '../layouts/MentorLayout'
@@ -31,6 +31,7 @@ export const router = createBrowserRouter(
       <Route element={<ProtectedRoute />}>
         {/* Mentor routes */}
         <Route path="/mentor" element={<MentorLayout />}>
+          <Route index element={<MentorDashboard />} />
           <Route path="dashboard" element={<MentorDashboard />} />
         </Route>
 

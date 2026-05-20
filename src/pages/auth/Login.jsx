@@ -1,7 +1,7 @@
 import React from 'react'
-import AuthHeader from '../../components/AuthHeader'
-import LoginForm from '../../components/LoginForm'
-import AuthFooter from '../../components/AuthFooter'
+import AuthHeader from '../../components/auth/AuthHeader'
+import LoginForm from '../../components/auth/LoginForm'
+import AuthFooter from '../../components/auth/AuthFooter'
 
 const Login = () => {
   return (

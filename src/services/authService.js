@@ -5,7 +5,7 @@ const API = axios.create({
   withCredentials: true,
 })
 
-// ✅ Attach access token automatically
+// Attach access token automatically
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem('accessToken')
   if (token) {
@@ -14,7 +14,7 @@ API.interceptors.request.use((config) => {
   return config
 })
 
-// ✅ Auto refresh on 401
+// Auto refresh on 401
 API.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -60,5 +60,7 @@ export const forgotPassword = (data) => API.post('/auth/forgot-password', data)
 
 export const resetPassword = (token, data) =>
   API.post(`/auth/reset-password/${token}`, data)
+
+export const updatePassword = (data) => API.post('/auth/update-password', data)
 
 export default API

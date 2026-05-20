@@ -63,7 +63,7 @@
   /* Backgrounds */
   --bg: 10 14 26;
   --surface: 20 25 40;
-  --surface-2: 32 38 58;
+  --surface-2: 36 44 66;
 
   /* Text */
   --text: 248 250 252;
@@ -71,7 +71,7 @@
   --text-muted: 148 163 184;
 
   /* Borders */
-  --border: 45 55 75;
+  --border: 58 68 92;
   --border-strong: 71 85 105;
 
   /* Status */
@@ -83,16 +83,16 @@
   /* Layout */
   --navbar-bg: 10 14 26;
   --sidebar-bg: 15 20 35;
-  --card-bg: 20 25 40;
+  --card-bg: 24 30 48;
 
   /* Interaction */
-  --hover: 32 38 58;
-  --active: 45 55 75;
+  --hover: 42 50 72;
+  --active: 58 68 92;
   --focus-ring: 129 140 248;
 
   /* Tables */
-  --table-header: 20 25 40;
-  --table-row-hover: 32 38 58;
+  --table-header: 24 30 48;
+  --table-row-hover: 42 50 72;
 
   /* Overlay */
   --overlay: 0 0 0;

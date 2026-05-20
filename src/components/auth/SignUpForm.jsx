@@ -1,12 +1,15 @@
 import React, { useState } from 'react'
-import useAuth from '../hooks/useAuth.js'
+import useAuth from '../../hooks/useAuth.js'
 import { Link, useNavigate } from 'react-router-dom'
+import { FiEye, FiEyeOff } from 'react-icons/fi'
 
 const SignUpForm = () => {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [role, setRole] = useState('learner')
   const [errors, setErrors] = useState({})
 
@@ -158,20 +161,30 @@ const SignUpForm = () => {
             <label className="text-xs sm:text-sm font-medium text-shadow-black">
               Password
             </label>
-            <input
-              type="password"
-              placeholder="••••••••"
-              className="w-full rounded-lg px-3 sm:px-4 py-2 sm:py-2.5
-                         bg-transparent
-                         border border-black
-                         text-black
-                         placeholder:text-gray-400
-                         focus:outline-none
-                         focus:ring-2 focus:ring-blue-500"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                placeholder="••••••••"
+                className="w-full rounded-lg px-3 sm:px-4 py-2 sm:py-2.5 pr-10
+                           bg-transparent
+                           border border-black
+                           text-black
+                           placeholder:text-gray-400
+                           focus:outline-none
+                           focus:ring-2 focus:ring-blue-500"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-black transition"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <FiEyeOff /> : <FiEye />}
+              </button>
+            </div>
             {errors.password && (
               <p className="text-red-500 text-xs mt-1">{errors.password}</p>
             )}
@@ -181,20 +194,32 @@ const SignUpForm = () => {
             <label className="text-xs sm:text-sm font-medium text-shadow-black">
               Confirm Password
             </label>
-            <input
-              type="password"
-              placeholder="••••••••"
-              className="w-full rounded-lg px-3 sm:px-4 py-2 sm:py-2.5
-                         bg-transparent
-                         border border-black
-                         text-black
-                         placeholder:text-gray-400
-                         focus:outline-none
-                         focus:ring-2 focus:ring-blue-500"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-            />
+            <div className="relative">
+              <input
+                type={showConfirmPassword ? 'text' : 'password'}
+                placeholder="••••••••"
+                className="w-full rounded-lg px-3 sm:px-4 py-2 sm:py-2.5 pr-10
+                           bg-transparent
+                           border border-black
+                           text-black
+                           placeholder:text-gray-400
+                           focus:outline-none
+                           focus:ring-2 focus:ring-blue-500"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword((prev) => !prev)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-black transition"
+                aria-label={
+                  showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'
+                }
+              >
+                {showConfirmPassword ? <FiEyeOff /> : <FiEye />}
+              </button>
+            </div>
             {errors.confirmPassword && (
               <p className="text-red-500 text-xs mt-1">
                 {errors.confirmPassword}

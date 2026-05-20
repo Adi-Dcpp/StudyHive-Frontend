@@ -6,6 +6,7 @@ import {
   registerUser,
   forgotPassword as forgotPasswordService,
   resetPassword as resetPasswordService,
+  updatePassword as updatePasswordService,
 } from '../services/authService'
 
 export const AuthContext = createContext()
@@ -75,6 +76,11 @@ export const AuthProvider = ({ children }) => {
     return response
   }
 
+  const updatePassword = async (data) => {
+    const response = await updatePasswordService(data)
+    return response
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -86,6 +92,7 @@ export const AuthProvider = ({ children }) => {
         signUp,
         forgotPassword,
         resetPassword,
+        updatePassword,
       }}
     >
       {children}

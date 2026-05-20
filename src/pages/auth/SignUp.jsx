@@ -1,7 +1,7 @@
 import React from 'react'
-import AuthHeader from '../../components/AuthHeader'
-import AuthFooter from '../../components/AuthFooter'
-import SignUpForm from '../../components/SignUpForm'
+import AuthHeader from '../../components/auth/AuthHeader'
+import AuthFooter from '../../components/auth/AuthFooter'
+import SignUpForm from '../../components/auth/SignUpForm'
 
 const SignUp = () => {
   return (

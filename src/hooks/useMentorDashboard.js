@@ -26,7 +26,7 @@ const useMentorDashboard = () => {
 
         console.log(res.data)
 
-        const payload = res?.data?.message ?? {};
+        const payload = res?.data?.data ?? {};
 
         setStats({
           groups: Number(payload.groups) || 0,
