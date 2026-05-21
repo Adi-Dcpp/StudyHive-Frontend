@@ -13,9 +13,15 @@ import ProtectedRoute from './ProtectedRoutes'
 import EmailVerification from '../pages/auth/EmailVerification'
 import EmailVerified from '../components/auth/EmailVerified'
 import ResetPassword from '../pages/auth/ResetPassword'
+import { groupRoutes } from './group.routes'
 
-import MentorLayout from '../layouts/MentorLayout'
-import MentorDashboard from '../pages/mentor/Dashboard'
+import AppLayout from '../layouts/AppLayout'
+import AppDashboard from '../pages/app/Dashboard'
+import AppGoals from '../pages/app/Goals'
+import AppAssignments from '../pages/app/Assignments'
+import AppSubmissions from '../pages/app/Submissions'
+import AppMessages from '../pages/app/Messages'
+import AppSettings from '../pages/app/Settings'
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -29,12 +35,51 @@ export const router = createBrowserRouter(
       <Route path="/reset-password/:token" element={<ResetPassword />} />
 
       <Route element={<ProtectedRoute />}>
-        {/* Mentor routes */}
-        <Route path="/mentor" element={<MentorLayout />}>
-          <Route index element={<MentorDashboard />} />
-          <Route path="dashboard" element={<MentorDashboard />} />
+        <Route path="/app" element={<AppLayout />}>
+
+          <Route
+            index
+            element={<Navigate to="dashboard" replace />}
+          />
+
+          <Route
+            path="dashboard"
+            element={<AppDashboard />}
+          />
+
+          {groupRoutes}
+
+          <Route
+            path="goals"
+            element={<AppGoals />}
+          />
+
+          <Route
+            path="assignments"
+            element={<AppAssignments />}
+          />
+
+          <Route
+            path="submissions"
+            element={<AppSubmissions />}
+          />
+
+          <Route
+            path="messages"
+            element={<AppMessages />}
+          />
+
+          <Route
+            path="settings"
+            element={<AppSettings />}
+          />
+
         </Route>
 
+        <Route
+          path="/mentor/*"
+          element={<Navigate to="/app/dashboard" replace />}
+        />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

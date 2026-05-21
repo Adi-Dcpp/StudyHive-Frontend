@@ -1,29 +1,41 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
-import Sidebar from "../components/Sidebar.jsx";
-import Topbar from "../components/Topbar.jsx"
+
+import Navbar from "../components/Navbar";
+import Sidebar from "../components/Sidebar";
 
 const AppLayout = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
 
   return (
-    <div className="min-h-screen flex bg-gray-50">
+    <div className="min-h-screen bg-[rgb(var(--bg))]">
+
+      {/* Navbar */}
+      <Navbar toggleSidebar={toggleSidebar} />
+
       {/* Sidebar */}
       <Sidebar
         isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
+        toggleSidebar={toggleSidebar}
       />
 
-      {/* Right Section */}
-      <div className="flex flex-col flex-1">
-        {/* Topbar */}
-        <Topbar toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
+      {/* Main Content */}
+      <main
+        className={`
+          pt-6
+          px-6
+          pb-6
+          transition-all duration-300
+          ${isSidebarOpen ? "ml-64" : "ml-0"}
+        `}
+      >
+        <Outlet />
+      </main>
 
-        {/* Main Content */}
-        <main className="flex-1 p-4 overflow-y-auto">
-          <Outlet />
-        </main>
-      </div>
     </div>
   );
 };

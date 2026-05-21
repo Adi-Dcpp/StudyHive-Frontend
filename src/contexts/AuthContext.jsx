@@ -19,16 +19,17 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const loadUser = async () => {
       const token = localStorage.getItem('accessToken')
+      const hasToken = token && token !== 'undefined' && token !== 'null'
 
-      if (!token) {
-        setLoading(false)
-        return
+      if (!hasToken && token) {
+        localStorage.removeItem('accessToken')
       }
 
       try {
         const { data } = await getCurrentUser()
         setUser(data.data.user)
       } catch (err) {
+        localStorage.removeItem('accessToken')
         setUser(null)
       } finally {
         setLoading(false)
@@ -42,7 +43,11 @@ export const AuthProvider = ({ children }) => {
     const response = await loginUser(credentials)
 
     const accessToken = response.data.data.accessToken
-    localStorage.setItem('accessToken', accessToken)
+    if (accessToken && accessToken !== 'undefined' && accessToken !== 'null') {
+      localStorage.setItem('accessToken', accessToken)
+    } else {
+      localStorage.removeItem('accessToken')
+    }
 
     const { data } = await getCurrentUser()
     const loggedInUser = data.data.user
