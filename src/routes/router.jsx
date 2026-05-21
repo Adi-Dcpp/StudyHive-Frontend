@@ -13,7 +13,7 @@ import ProtectedRoute from './ProtectedRoutes'
 import EmailVerification from '../pages/auth/EmailVerification'
 import EmailVerified from '../components/auth/EmailVerified'
 import ResetPassword from '../pages/auth/ResetPassword'
-import { groupRoutes } from './group.routes'
+import { groupRoutes } from './groupRoutes.jsx'
 
 import AppLayout from '../layouts/AppLayout'
 import AppDashboard from '../pages/app/Dashboard'
