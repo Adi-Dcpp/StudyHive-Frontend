@@ -1,4 +1,3 @@
-
 import { useState } from 'react'
 import GroupCard from '../../components/group/GroupCard'
 import CreateGroupModal from '../../components/group/CreateGroupModal'

@@ -39,7 +39,7 @@ const GroupCard = ({ group }) => {
 
   return (
     <Link
-      to={`/app/groups/${group._id}`}
+      to={`/app/groups/${group.groupId}`}
       className={
         `group relative overflow-hidden
 

@@ -13,6 +13,7 @@
     "codebase:save": "node print-codebase.js --full --out Codebase.md"
   },
   "dependencies": {
+    "@babel/parser": "^7.29.7",
     "axios": "^1.13.5",
     "framer-motion": "^12.34.0",
     "lucide-react": "^1.16.0",

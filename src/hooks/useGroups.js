@@ -1,5 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
-import { getMyGroups } from '../services/groupService'
+import {
+  getMyGroups,
+} from '../services/groupService'
 
 const useGroups = () => {
   const [groups, setGroups] = useState([])
