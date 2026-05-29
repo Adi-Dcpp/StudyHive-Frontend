@@ -9,20 +9,19 @@ const StatsCards = ({ stats }) => {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
       {cards.map((item) => (
         <div
           key={item.title}
           className="
-          p-6
-          rounded-xl
+          rounded-3xl
           border border-[rgb(var(--border))]
           bg-[rgb(var(--card-bg))]
+          p-5
           flex items-center justify-between
           shadow-sm
-          hover:shadow-md
-          transition-all
-          hover:bg-[rgb(var(--surface-2))]
+          transition-colors
+          hover:bg-[rgb(var(--surface))]
         "
         >
 
@@ -32,7 +31,7 @@ const StatsCards = ({ stats }) => {
               {item.title}
             </p>
 
-            <h2 className="text-3xl font-bold text-[rgb(var(--text))]">
+            <h2 className="text-2xl font-bold text-[rgb(var(--text))] sm:text-[2rem]">
               {item.value}
             </h2>
           </div>
@@ -40,12 +39,12 @@ const StatsCards = ({ stats }) => {
           {/* Icon */}
           <div
             className="
-            w-12 h-12
+              w-11 h-11
             flex items-center justify-center
             rounded-lg
             bg-[rgb(var(--primary-soft))]
             text-[rgb(var(--primary))]
-            text-xl
+              text-lg
           "
           >
             {item.icon}

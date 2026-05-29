@@ -1,21 +1,34 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
 
-const useMentorDashboard = () => {
-  const [stats, setStats] = useState({
+const defaultStats = {
     groups: 0,
     learners: 0,
     assignments: 0,
     submissions: 0,
-  });
+  };
+
+const useMentorDashboard = ({ enabled = true } = {}) => {
+  const [stats, setStats] = useState(defaultStats);
 
   const [recentSubmissions, setRecentSubmissions] = useState([]);
   const [recentAssignments, setRecentAssignments] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(enabled);
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    if (!enabled) {
+      setStats(defaultStats);
+      setRecentSubmissions([]);
+      setRecentAssignments([]);
+      setError(null);
+      setLoading(false);
+      return;
+    }
+
     const fetchDashboard = async () => {
+      setLoading(true);
+
       try {
         const res = await api.get("/dashboard/mentor", {
           headers: {
@@ -46,7 +59,7 @@ const useMentorDashboard = () => {
     };
 
     fetchDashboard();
-  }, []);
+  }, [enabled]);
 
   return { stats, recentSubmissions, recentAssignments, loading, error };
 };

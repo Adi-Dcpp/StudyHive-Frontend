@@ -20,7 +20,12 @@ import {
 } from 'lucide-react'
 
 import useAuth from '../../hooks/useAuth'
-import { getGroupDetails } from '../../services/groupService'
+import {
+  deleteGroup as deleteGroupApi,
+  getGroupDetails,
+  regenerateInviteCode as regenerateInviteCodeApi,
+  leaveGroup as leaveGroupApi,
+} from '../../services/groupService'
 
 const formatDate = (value) => {
   if (!value) return 'N/A'
@@ -144,6 +149,7 @@ const GroupDetailPage = () => {
   const [error, setError] = useState(null)
   const [activeTab, setActiveTab] = useState('overview')
   const [copied, setCopied] = useState(false)
+  const [inviteCode, setInviteCode] = useState('')
 
   useEffect(() => {
     let isMounted = true
@@ -154,6 +160,8 @@ const GroupDetailPage = () => {
         const data = await getGroupDetails(groupId)
 
         if (!isMounted) return
+
+        setInviteCode(data.inviteCode || '')
 
         setGroup(data)
         setError(null)
@@ -176,9 +184,9 @@ const GroupDetailPage = () => {
 
   const role = group?.role ?? 'learner'
   const memberName = user?.name || user?.fullName || user?.username || 'Member'
-  const inviteCode = group?.inviteCode ?? 'N/A'
 
   const createdDate = useMemo(() => formatDate(group?.createdAt), [group?.createdAt])
+  const learnerAccessMessage = 'Ask mentor for invite code'
 
   const copyInviteCode = async () => {
     if (!group?.inviteCode) return
@@ -192,16 +200,38 @@ const GroupDetailPage = () => {
     }
   }
 
-  const regenerateInviteCode = () => {
-    console.log('Regenerate invite code')
+  const handleRegenerateInviteCode = () => {
+    if (role !== 'mentor') return
+
+    regenerateInviteCodeApi(groupId)
+      .then((data) => {
+        setInviteCode(data.inviteCode)
+      })
+      .catch((err) => {
+        console.error('Failed to regenerate invite code', err)
+      })
   }
 
   const deleteGroup = () => {
-    console.log('Delete group')
+    window.confirm('Are you sure you want to delete this group? This action cannot be undone.') &&
+    deleteGroupApi(groupId)
+      .then(() => {
+        window.location.href = '/app/groups'
+      })
+      .catch((err) => {
+        console.error('Failed to delete group', err)
+      })
   }
 
   const leaveGroup = () => {
-    console.log('Leave group')
+    window.confirm('Are you sure you want to leave this group? You will lose access to its resources and discussions.') &&
+    leaveGroupApi(groupId)
+      .then(() => {
+        window.location.href = '/app/groups'
+      })
+      .catch((err) => {
+        console.error('Failed to leave group', err)
+      })
   }
 
   const tabs = {
@@ -216,7 +246,12 @@ const GroupDetailPage = () => {
       { title: 'Created', value: createdDate, icon: CalendarDays, accent: 'warning' },
     ],
     access: [
-      { title: 'Invite Code', value: inviteCode, icon: Sparkles, accent: 'primary' },
+      {
+        title: 'Invite Code',
+        value: role === 'mentor' ? inviteCode : learnerAccessMessage,
+        icon: Sparkles,
+        accent: 'primary',
+      },
       { title: 'Signed in as', value: memberName, icon: UserRound, accent: 'success' },
       { title: 'Group ID', value: group?.groupId ?? groupId, icon: LayoutGrid, accent: 'warning' },
     ],
@@ -370,36 +405,53 @@ const GroupDetailPage = () => {
               }}
             >
               <p className="text-[11px] uppercase tracking-[0.28em]" style={{ color: 'rgb(var(--text-muted))' }}>
-                Invite Code
+                {role === 'mentor' ? 'Invite Code' : 'Group Access'}
               </p>
-              <div
-                className="mt-4 flex items-center justify-between gap-3 rounded-3xl border px-4 py-4 sm:gap-4 sm:px-5"
-                style={{ borderColor: 'rgba(var(--border),0.9)', background: 'rgba(var(--bg),0.35)' }}
-              >
-                <div className="min-w-0">
-                  <p className="text-[11px] uppercase tracking-[0.24em]" style={{ color: 'rgb(var(--text-muted))' }}>Code</p>
-                  <h2 className="mt-2 break-all text-xl font-black tracking-[0.14em] sm:text-2xl" style={{ color: 'rgb(var(--text))', lineHeight: 1.1 }}>
-                    {inviteCode}
-                  </h2>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={copyInviteCode}
-                  className="flex h-10 shrink-0 items-center gap-2 rounded-2xl px-3 text-sm font-semibold text-white transition-transform duration-300 hover:scale-[1.03] sm:px-4"
-                  style={{ background: 'rgb(var(--primary))' }}
+              {role === 'mentor' ? (
+                <div
+                  className="mt-4 flex items-center justify-between gap-3 rounded-3xl border px-4 py-4 sm:gap-4 sm:px-5"
+                  style={{ borderColor: 'rgba(var(--border),0.9)', background: 'rgba(var(--bg),0.35)' }}
                 >
-                  <Copy size={16} />
-                  {copied ? 'Copied' : 'Copy'}
-                </button>
-              </div>
+                  <div className="min-w-0">
+                    <p className="text-[11px] uppercase tracking-[0.24em]" style={{ color: 'rgb(var(--text-muted))' }}>Code</p>
+                    <h2 className="mt-2 break-all text-xl font-black tracking-[0.14em] sm:text-2xl" style={{ color: 'rgb(var(--text))', lineHeight: 1.1 }}>
+                      {inviteCode}
+                    </h2>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={copyInviteCode}
+                    className="flex h-10 shrink-0 items-center gap-2 rounded-2xl px-3 text-sm font-semibold text-white transition-transform duration-300 hover:scale-[1.03] sm:px-4"
+                    style={{ background: 'rgb(var(--primary))' }}
+                  >
+                    <Copy size={16} />
+                    {copied ? 'Copied' : 'Copy'}
+                  </button>
+                </div>
+              ) : (
+                <div
+                  className="mt-4 rounded-3xl border px-4 py-5 sm:px-5"
+                  style={{ borderColor: 'rgba(var(--border),0.9)', background: 'rgba(var(--bg),0.35)' }}
+                >
+                  <p className="text-[11px] uppercase tracking-[0.24em]" style={{ color: 'rgb(var(--text-muted))' }}>
+                    Mentor contact required
+                  </p>
+                  <h2 className="mt-2 text-2xl font-black sm:text-3xl" style={{ color: 'rgb(var(--text))', lineHeight: 1.05 }}>
+                    Ask mentor for invite code
+                  </h2>
+                  <p className="mt-2 text-sm leading-6" style={{ color: 'rgb(var(--text-secondary))' }}>
+                    Your mentor can share the code when you need access.
+                  </p>
+                </div>
+              )}
 
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
                 {role === 'mentor' ? (
                   <>
                     <button
                       type="button"
-                      onClick={regenerateInviteCode}
+                      onClick={handleRegenerateInviteCode}
                       className="flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold text-white transition-all duration-300 hover:opacity-90"
                       style={{ background: 'rgb(var(--primary))' }}
                     >

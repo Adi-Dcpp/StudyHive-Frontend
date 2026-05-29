@@ -3,11 +3,17 @@ import {
   getMyGroups,
 } from '../services/groupService'
 
-const useGroups = () => {
+const useGroups = ({ enabled = true } = {}) => {
   const [groups, setGroups] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(enabled)
 
   const fetchGroups = useCallback(async () => {
+    if (!enabled) {
+      setGroups([])
+      setLoading(false)
+      return
+    }
+
     setLoading(true)
 
     try {
@@ -18,7 +24,7 @@ const useGroups = () => {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [enabled])
 
   useEffect(() => {
     fetchGroups()
