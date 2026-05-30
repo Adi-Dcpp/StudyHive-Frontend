@@ -41,6 +41,7 @@ const NotificationBell = () => {
 
       }
 
+
     } catch (error) {
 
       console.error(
