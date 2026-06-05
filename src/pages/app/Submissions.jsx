@@ -200,7 +200,7 @@ const Submissions = () => {
         <section className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
           <div className="rounded-[34px] border border-[rgb(var(--border))] bg-[rgb(var(--card-bg))] p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
             <p className="text-xs uppercase tracking-[0.28em] text-[rgb(var(--text-muted))]">Goals</p>
-            <h2 className="mt-2 text-xl font-bold">{selectedGoal?.title || 'Pick a goal'}</h2>
+            <h2 className="mt-2 text-xl font-bold">{goals.find(goal => getGoalId(goal) === selectedGoalId)?.title || 'Pick a goal'}</h2>
 
             <div className="mt-4 grid gap-3">
               {loadingGoals ? (
