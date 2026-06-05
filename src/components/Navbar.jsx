@@ -23,7 +23,7 @@ const Navbar = ({ toggleSidebar }) => {
     <nav
       className="
       flex items-center justify-between
-      px-6
+      px-3 sm:px-6
       h-16
       border-b border-[rgb(var(--border))]
       bg-[rgb(var(--navbar-bg))/80]
@@ -33,8 +33,7 @@ const Navbar = ({ toggleSidebar }) => {
     "
     >
       {/* LEFT */}
-      <div className="flex items-center gap-4">
-
+      <div className="flex items-center gap-2 sm:gap-4">
         <button
           onClick={toggleSidebar}
           className="
@@ -48,14 +47,16 @@ const Navbar = ({ toggleSidebar }) => {
         </button>
 
         <Link to="/" className="flex items-center">
-          <img src={logo} alt="Logo" className="h-9 w-auto" />
+          <img
+            src={logo}
+            alt="Logo"
+            className="h-7 sm:h-9 w-auto"
+          />
         </Link>
-
       </div>
 
       {/* RIGHT */}
-      <div className="flex items-center gap-5">
-
+      <div className="flex items-center gap-2 sm:gap-5">
         {/* Notification Bell */}
         <NotificationBell />
 
@@ -64,7 +65,8 @@ const Navbar = ({ toggleSidebar }) => {
           onClick={toggleTheme}
           className="
           relative flex items-center
-          w-14 h-7
+          w-12 h-6
+          sm:w-14 sm:h-7
           bg-[rgb(var(--surface-2))]
           rounded-full
           transition-colors
@@ -72,14 +74,20 @@ const Navbar = ({ toggleSidebar }) => {
         >
           <div
             className={`
-            absolute w-6 h-6
+            absolute
+            w-5 h-5
+            sm:w-6 sm:h-6
             rounded-full
             shadow-md
             transform
             transition-transform
             flex items-center justify-center
-            text-xs
-            ${theme === "dark" ? "translate-x-7" : "translate-x-1"}
+            text-[10px] sm:text-xs
+            ${
+              theme === "dark"
+                ? "translate-x-6 sm:translate-x-7"
+                : "translate-x-0.5 sm:translate-x-1"
+            }
             bg-[rgb(var(--card-bg))]
             `}
           >
@@ -91,7 +99,8 @@ const Navbar = ({ toggleSidebar }) => {
         <div
           className="
           flex items-center gap-2
-          px-3 py-1
+          px-2 sm:px-3
+          py-1
           rounded-lg
           hover:bg-[rgb(var(--hover))]
           transition
@@ -106,12 +115,21 @@ const Navbar = ({ toggleSidebar }) => {
             text-[rgb(var(--primary))]
             font-semibold
             text-sm
+            shrink-0
           "
           >
             {avatarLetter || <FaUserCircle />}
           </div>
 
-          <span className="text-sm font-medium text-[rgb(var(--text))]">
+          <span
+            className="
+            hidden md:block
+            text-sm font-medium
+            text-[rgb(var(--text))]
+            max-w-[140px]
+            truncate
+          "
+          >
             {user?.name || "User"}
           </span>
         </div>
@@ -121,7 +139,8 @@ const Navbar = ({ toggleSidebar }) => {
           onClick={handleLogout}
           className="
           flex items-center gap-2
-          px-3 py-1.5
+          px-2 sm:px-3
+          py-1.5
           rounded-md
           text-white
           bg-[rgb(var(--error))]
@@ -131,9 +150,11 @@ const Navbar = ({ toggleSidebar }) => {
         "
         >
           <FiLogOut size={16} />
-          Logout
-        </button>
 
+          <span className="hidden sm:inline">
+            Logout
+          </span>
+        </button>
       </div>
     </nav>
   );
