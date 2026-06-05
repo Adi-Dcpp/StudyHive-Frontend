@@ -1,5 +1,8 @@
 {
   "rewrites": [
-    { "source": "/(.*)", "destination": "/" }
+    {
+      "source": "/api/:path*",
+      "destination": "https://studyhive-backend-39xb.onrender.com/api/v1/:path*"
+    }
   ]
 }
