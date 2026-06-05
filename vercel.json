@@ -1,8 +1,12 @@
 {
   "rewrites": [
     {
-      "source": "/api/:path*",
-      "destination": "https://studyhive-backend-39xb.onrender.com/api/v1/:path*"
+      "source": "/api/(.*)",
+      "destination": "https://studyhive-backend-39xb.onrender.com/api/v1/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
