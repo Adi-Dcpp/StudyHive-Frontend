@@ -5,14 +5,14 @@ const api = axios.create({
   withCredentials: true
 });
 
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("accessToken");
+// api.interceptors.request.use((config) => {
+//   const token = localStorage.getItem("accessToken");
 
-  if (token && token !== "undefined" && token !== "null") {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+//   if (token && token !== "undefined" && token !== "null") {
+//     config.headers.Authorization = `Bearer ${token}`;
+//   }
 
-  return config;
-});
+//   return config;
+// });
 
 export default api;
