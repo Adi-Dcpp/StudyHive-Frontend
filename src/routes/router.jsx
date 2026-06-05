@@ -22,6 +22,7 @@ import AppAssignments from '../pages/app/Assignments'
 import AppSubmissions from '../pages/app/Submissions'
 import AppMessages from '../pages/app/Messages'
 import AppSettings from '../pages/app/Settings'
+import GoalDetails from '../pages/goals/GoalDetails'
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -52,6 +53,11 @@ export const router = createBrowserRouter(
           <Route
             path="goals"
             element={<AppGoals />}
+          />
+
+          <Route
+            path="goals/:goalId"
+            element={<GoalDetails />}
           />
 
           <Route

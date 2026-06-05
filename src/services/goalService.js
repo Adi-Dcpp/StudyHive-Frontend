@@ -2,8 +2,8 @@ import API from './api'
 
 const unwrap = (res) => res?.data?.data ?? res?.data ?? res
 
-const getMyGoals = async () => {
-    const response = await API.get('/goals/me')
+const getMyGoals = async (params = {}) => {
+    const response = await API.get('/goals/me', { params })
     return unwrap(response)
 }
 
@@ -12,8 +12,8 @@ const createGoal = async (groupId, payload) => {
     return unwrap(response)
 }
 
-const getGoalsByGroup = async (groupId) => {
-    const response = await API.get(`/goals/${groupId}`)
+const getGoalsByGroup = async (groupId, params = {}) => {
+    const response = await API.get(`/goals/${groupId}`, { params })
     return unwrap(response)
 }
 

@@ -1,5 +1,7 @@
+import GoalsList from '../goals/GoalsList'
+
 const Goals = () => {
-  return <div>Goals Page</div>
+  return <GoalsList />
 }
 
 export default Goals

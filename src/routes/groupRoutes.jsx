@@ -7,6 +7,7 @@ import GoalsPage from '../pages/groups/modules/GoalsPage'
 import AssignmentsPage from '../pages/groups/modules/AssignmentsPage'
 import MembersPage from '../pages/groups/modules/MembersPage'
 import MessagesPage from '../pages/groups/modules/MessagesPage'
+import SubmissionsPage from '../pages/groups/modules/SubmissionsPage'
 
 export const groupRoutes = (
   <>
@@ -33,6 +34,11 @@ export const groupRoutes = (
     <Route
       path="groups/:groupId/assignments"
       element={<AssignmentsPage />}
+    />
+
+    <Route
+      path="groups/:groupId/submissions"
+      element={<SubmissionsPage />}
     />
 
     <Route

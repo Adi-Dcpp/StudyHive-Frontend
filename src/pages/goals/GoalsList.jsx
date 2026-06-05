@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
-import { RefreshCw, Search, Target } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { FolderOpen, RefreshCw, Search, Target } from 'lucide-react'
 
-import useAuth from '../../../hooks/useAuth'
-import goalService from '../../../services/goalService'
+import useAuth from '../../hooks/useAuth'
+import useGroups from '../../hooks/useGroups'
+import goalService from '../../services/goalService'
 
 const statusMeta = {
   not_started: {
@@ -36,11 +37,12 @@ const formatDate = (value) => {
 
 const getGoalId = (goal) => goal?.goalId || goal?._id || goal?.id
 
-const GoalsPage = () => {
-  const { groupId } = useParams()
+const GoalsList = () => {
   const { user } = useAuth()
   const role = user?.role || 'learner'
   const isMentor = role === 'mentor'
+
+  const { groups, loading: groupsLoading } = useGroups({ enabled: isMentor })
 
   const [goals, setGoals] = useState([])
   const [loading, setLoading] = useState(true)
@@ -54,17 +56,28 @@ const GoalsPage = () => {
       setError(null)
 
       if (isMentor) {
-        const response = await goalService.getGoalsByGroup(groupId, { page: 1, limit: 50 })
-        setGoals(response?.goals || response || [])
+        const groupIds = (groups || [])
+          .map((group) => group?.groupId || group?._id || group?.id)
+          .filter(Boolean)
+
+        if (groupIds.length === 0) {
+          setGoals([])
+          return
+        }
+
+        const responses = await Promise.all(
+          groupIds.map((groupId) =>
+            goalService.getGoalsByGroup(groupId, { page: 1, limit: 50 })
+          )
+        )
+
+        const merged = responses.flatMap((response) => response?.goals || response || [])
+        setGoals(merged)
         return
       }
 
-      const response = await goalService.getMyGoals({ page: 1, limit: 100 })
-      const items = response?.goals || response || []
-      const filtered = items.filter(
-        (goal) => (goal.group?._id || goal.groupId || '') === groupId
-      )
-      setGoals(filtered)
+      const response = await goalService.getMyGoals({ page: 1, limit: 50 })
+      setGoals(response?.goals || response || [])
     } catch (err) {
       setError(err?.response?.data?.message || err?.message || 'Failed to load goals')
     } finally {
@@ -73,14 +86,17 @@ const GoalsPage = () => {
   }
 
   useEffect(() => {
+    if (isMentor && groupsLoading) return
     loadGoals()
-  }, [groupId, isMentor])
+  }, [isMentor, groupsLoading, groups])
 
   const normalizedGoals = useMemo(
     () =>
       goals.map((goal) => ({
         ...goal,
         goalId: getGoalId(goal),
+        groupName: goal?.group?.name || goal?.groupName || goal?.group?.title || 'Group',
+        groupId: goal?.group?._id || goal?.groupId,
         assignedCount: Array.isArray(goal?.assignedTo) ? goal.assignedTo.length : 0,
       })),
     [goals]
@@ -91,9 +107,10 @@ const GoalsPage = () => {
 
     return normalizedGoals.filter((goal) => {
       if (statusFilter !== 'all' && goal.status !== statusFilter) return false
+
       if (!term) return true
 
-      return [goal.title, goal.description]
+      return [goal.title, goal.description, goal.groupName]
         .filter(Boolean)
         .some((value) => value.toLowerCase().includes(term))
     })
@@ -102,47 +119,59 @@ const GoalsPage = () => {
   return (
     <div className="min-h-screen bg-[rgb(var(--bg))] px-4 py-8 text-[rgb(var(--text))] sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        <section className="rounded-[36px] border border-[rgb(var(--border))] bg-[rgb(var(--card-bg))] px-6 py-7 shadow-sm sm:px-8">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div>
+        <section className="relative overflow-hidden rounded-[36px] border border-[rgb(var(--border))] bg-[rgb(var(--card-bg))] px-6 py-7 shadow-sm sm:px-8">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(var(--primary),0.16),transparent_42%),radial-gradient(circle_at_bottom_right,rgba(var(--warning),0.16),transparent_38%)]" />
+          <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-3xl">
               <p className="text-xs uppercase tracking-[0.34em] text-[rgb(var(--text-muted))]">
-                Group goals
+                Goals
               </p>
               <h1 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl">
-                Goals in this group
+                All goals
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-7 text-[rgb(var(--text-secondary))] sm:text-base">
-                Open a goal to see details and manage assignments.
+                Track every goal assigned to you. Open a goal to review status, assignments, and
+                next actions.
               </p>
             </div>
-            <button
-              type="button"
-              onClick={loadGoals}
-              className="inline-flex items-center gap-2 rounded-full border border-[rgb(var(--border))] bg-[rgb(var(--surface))] px-4 py-3 text-sm font-semibold text-[rgb(var(--text))]"
-            >
-              <RefreshCw size={16} />
-              Refresh
-            </button>
+
+            <div className="flex flex-wrap items-center gap-3 lg:justify-end">
+              <div className="rounded-2xl border border-[rgb(var(--border))] bg-[rgb(var(--surface))] px-4 py-3">
+                <p className="text-[11px] uppercase tracking-[0.22em] text-[rgb(var(--text-muted))]">
+                  Total
+                </p>
+                <p className="mt-1 text-xl font-black">{filteredGoals.length}</p>
+              </div>
+              <button
+                type="button"
+                onClick={loadGoals}
+                className="inline-flex items-center gap-2 rounded-full border border-[rgb(var(--border))] bg-[rgb(var(--surface))] px-4 py-3 text-sm font-semibold text-[rgb(var(--text))]"
+              >
+                <RefreshCw size={16} />
+                Refresh
+              </button>
+            </div>
           </div>
         </section>
 
-        {error ? (
-          <div className="mt-4 rounded-2xl border border-[rgb(var(--error))] bg-[rgba(var(--error),0.08)] px-4 py-3 text-sm text-[rgb(var(--error))]">
-            {error}
-          </div>
-        ) : null}
-
         <section className="mt-6 rounded-[34px] border border-[rgb(var(--border))] bg-[rgb(var(--card-bg))] p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
+          {error ? (
+            <div className="mb-5 rounded-2xl border border-[rgb(var(--error))] bg-[rgba(var(--error),0.08)] px-4 py-3 text-sm text-[rgb(var(--error))]">
+              {error}
+            </div>
+          ) : null}
+
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <div className="flex flex-1 items-center gap-2 rounded-2xl border border-[rgb(var(--border))] bg-[rgb(var(--surface))] px-4 py-3">
               <Search size={16} className="text-[rgb(var(--text-muted))]" />
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search goals"
+                placeholder="Search by goal or group"
                 className="w-full bg-transparent text-sm text-[rgb(var(--text))] outline-none"
               />
             </div>
+
             <div className="flex flex-wrap items-center gap-2">
               {['all', 'not_started', 'ongoing', 'completed'].map((status) => (
                 <button
@@ -168,7 +197,7 @@ const GoalsPage = () => {
               </div>
             ) : filteredGoals.length === 0 ? (
               <div className="rounded-3xl border border-dashed border-[rgb(var(--border))] bg-[rgb(var(--surface))] px-5 py-6 text-sm text-[rgb(var(--text-muted))]">
-                No goals found for this group.
+                No goals found yet.
               </div>
             ) : (
               filteredGoals.map((goal) => {
@@ -192,7 +221,7 @@ const GoalsPage = () => {
                           {goal.title || 'Untitled goal'}
                         </p>
                         <p className="text-sm text-[rgb(var(--text-secondary))]">
-                          {goal.description || 'No description yet'}
+                          {goal.groupName}
                         </p>
                         <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
                           <span
@@ -210,6 +239,11 @@ const GoalsPage = () => {
                         </div>
                       </div>
                     </div>
+
+                    <div className="inline-flex items-center gap-2 rounded-full border border-[rgb(var(--border))] px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[rgb(var(--text-muted))]">
+                      <FolderOpen size={14} />
+                      Open
+                    </div>
                   </Link>
                 )
               })
@@ -221,4 +255,4 @@ const GoalsPage = () => {
   )
 }
 
-export default GoalsPage
+export default GoalsList

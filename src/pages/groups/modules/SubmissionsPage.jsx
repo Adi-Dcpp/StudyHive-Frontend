@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
+import { useParams } from 'react-router-dom'
 import { RefreshCw, ShieldCheck } from 'lucide-react'
 
-import useAuth from '../../hooks/useAuth'
-import useGroups from '../../hooks/useGroups'
-import goalService from '../../services/goalService'
-import assignmentService from '../../services/assignmentService'
-import submissionService from '../../services/submissionService'
+import useAuth from '../../../hooks/useAuth'
+import goalService from '../../../services/goalService'
+import assignmentService from '../../../services/assignmentService'
+import submissionService from '../../../services/submissionService'
 
 const formatDate = (value) => {
   if (!value) return 'N/A'
@@ -22,12 +22,11 @@ const formatDate = (value) => {
 
 const getGoalId = (goal) => goal?.goalId || goal?._id || goal?.id
 
-const Submissions = () => {
+const SubmissionsPage = () => {
+  const { groupId } = useParams()
   const { user } = useAuth()
   const role = user?.role || 'learner'
   const isMentor = role === 'mentor'
-
-  const { groups, loading: groupsLoading } = useGroups({ enabled: isMentor })
 
   const [goals, setGoals] = useState([])
   const [selectedGoalId, setSelectedGoalId] = useState('')
@@ -52,26 +51,17 @@ const Submissions = () => {
       setError(null)
 
       if (isMentor) {
-        const groupIds = (groups || [])
-          .map((group) => group?.groupId || group?._id || group?.id)
-          .filter(Boolean)
-
-        if (groupIds.length === 0) {
-          setGoals([])
-          return
-        }
-
-        const responses = await Promise.all(
-          groupIds.map((groupId) => goalService.getGoalsByGroup(groupId, { page: 1, limit: 50 }))
-        )
-
-        const merged = responses.flatMap((response) => response?.goals || response || [])
-        setGoals(merged)
+        const response = await goalService.getGoalsByGroup(groupId, { page: 1, limit: 50 })
+        setGoals(response?.goals || response || [])
         return
       }
 
-      const response = await goalService.getMyGoals({ page: 1, limit: 50 })
-      setGoals(response?.goals || response || [])
+      const response = await goalService.getMyGoals({ page: 1, limit: 100 })
+      const items = response?.goals || response || []
+      const filtered = items.filter(
+        (goal) => (goal.group?._id || goal.groupId || '') === groupId
+      )
+      setGoals(filtered)
     } catch (err) {
       setError(err?.response?.data?.message || err?.message || 'Failed to load goals')
     } finally {
@@ -130,9 +120,8 @@ const Submissions = () => {
   }
 
   useEffect(() => {
-    if (isMentor && groupsLoading) return
     loadGoals()
-  }, [isMentor, groupsLoading, groups])
+  }, [groupId, isMentor])
 
   useEffect(() => {
     const nextGoalId = getGoalId(goals[0])
@@ -171,13 +160,13 @@ const Submissions = () => {
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="text-xs uppercase tracking-[0.34em] text-[rgb(var(--text-muted))]">
-                Submissions
+                Group submissions
               </p>
               <h1 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl">
-                Review progress
+                Submissions in this group
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-7 text-[rgb(var(--text-secondary))] sm:text-base">
-                Select a goal and assignment to review learner submissions or track your own.
+                Review learner submissions or track your own progress.
               </p>
             </div>
             <button
@@ -435,4 +424,4 @@ const Submissions = () => {
   )
 }
 
-export default Submissions
+export default SubmissionsPage

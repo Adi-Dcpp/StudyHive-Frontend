@@ -277,6 +277,12 @@ const GroupDetailPage = () => {
       to: `/app/groups/${groupId}/assignments`,
     },
     {
+      title: 'Submissions',
+      description: 'Review learner submissions and feedback.',
+      icon: UserRound,
+      to: `/app/groups/${groupId}/submissions`,
+    },
+    {
       title: 'Members',
       description: 'See the people in this group.',
       icon: Users,
