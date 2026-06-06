@@ -10,7 +10,7 @@ Frontend application for **StudyHive**, a collaborative learning platform built 
 
 ## 🎥 Demo Video
 
-🔗 [DEMO_LINK](https://drive.google.com/file/d/1wSjH3o9KRMQd4apS2GTKx9xxvLd2Ejxf/view?usp=drivesdk)
+🔗 [DEMO_LINK](https://drive.google.com/file/d/1YQtmtUrsksFfZh7pja_TGxAtVxtVvlDO/view?usp=drivesdk)
 
 ## 📂 Repositories
 
