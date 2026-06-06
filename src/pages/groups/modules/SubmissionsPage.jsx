@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { RefreshCw, ShieldCheck } from 'lucide-react'
 
@@ -153,6 +153,11 @@ const SubmissionsPage = () => {
     }
   }
 
+  const selectedGoal = useMemo(
+    () => goals.find((goal) => getGoalId(goal) === selectedGoalId),
+    [goals, selectedGoalId]
+  )
+
   return (
     <div className="min-h-screen bg-[rgb(var(--bg))] px-4 py-8 text-[rgb(var(--text))] sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
@@ -212,11 +217,10 @@ const SubmissionsPage = () => {
                         setSelectedGoalId(id)
                         setSelectedAssignmentId('')
                       }}
-                      className={`rounded-3xl border px-4 py-3 text-left text-sm transition ${
-                        selectedGoalId === id
+                      className={`rounded-3xl border px-4 py-3 text-left text-sm transition ${selectedGoalId === id
                           ? 'border-transparent bg-[rgb(var(--primary))] text-white'
                           : 'border-[rgb(var(--border))] bg-[rgb(var(--surface))] text-[rgb(var(--text))]'
-                      }`}
+                        }`}
                     >
                       <p className="font-semibold">{goal.title}</p>
                       <p className="text-xs opacity-80">
@@ -265,11 +269,10 @@ const SubmissionsPage = () => {
                       key={id}
                       type="button"
                       onClick={() => setSelectedAssignmentId(id)}
-                      className={`rounded-3xl border px-4 py-3 text-left text-sm transition ${
-                        selectedAssignmentId === id
+                      className={`rounded-3xl border px-4 py-3 text-left text-sm transition ${selectedAssignmentId === id
                           ? 'border-transparent bg-[rgb(var(--primary))] text-white'
                           : 'border-[rgb(var(--border))] bg-[rgb(var(--surface))] text-[rgb(var(--text))]'
-                      }`}
+                        }`}
                     >
                       <p className="font-semibold">{assignment.title}</p>
                       <p className="text-xs opacity-80">Deadline {formatDate(assignment.deadline)}</p>
